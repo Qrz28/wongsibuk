@@ -111,6 +111,23 @@ $user_email = $_SESSION['email'];
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="perjalanan.html">Perjalanan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="tangkapan.html">Tangkapan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#spot">Spot Memancing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#laporan">Laporan</a>
+                    </li>
+                </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
@@ -128,20 +145,8 @@ $user_email = $_SESSION['email'];
     </nav>
 
     <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar">
-                <nav class="nav flex-column">
-                    <a class="nav-link active" href="#dashboard">Dashboard</a>
-                    <a class="nav-link" href="perjalanan.html">Perjalanan</a>
-                    <a class="nav-link" href="tangkapan.html">Tangkapan</a>
-                    <a class="nav-link" href="#spot">Spot Memancing</a>
-                    <a class="nav-link" href="#laporan">Laporan</a>
-                </nav>
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-md-10 main-content">
+        <!-- Main Content -->
+        <div class="main-content">
                 <!-- Welcome Section -->
                 <div class="welcome-card">
                     <h2>Selamat datang, <?php echo htmlspecialchars($user_name); ?>! 👋</h2>
@@ -151,7 +156,7 @@ $user_email = $_SESSION['email'];
 
                 <!-- Dashboard Cards -->
                 <div class="row">
-                    <div class="col-md-3 mb-4">
+                    <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="card-icon">🎣</div>
@@ -163,7 +168,7 @@ $user_email = $_SESSION['email'];
                         </div>
                     </div>
 
-                    <div class="col-md-3 mb-4">
+                    <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="card-icon">🐟</div>
@@ -174,7 +179,7 @@ $user_email = $_SESSION['email'];
                         </div>
                     </div>
 
-                    <div class="col-md-3 mb-4">
+                    <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="card-icon">📍</div>
@@ -185,7 +190,7 @@ $user_email = $_SESSION['email'];
                         </div>
                     </div>
 
-                    <div class="col-md-3 mb-4">
+                    <div class="col-md-4 mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="card-icon">📊</div>
