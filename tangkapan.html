@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tangkapan - Fishing Log</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">🎣 Fishing Log</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Tangkapan</h3>
+            <button id="btnAdd" class="btn btn-primary">Tambah Tangkapan</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped" id="catchesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Perjalanan</th>
+                        <th>Jenis Ikan</th>
+                        <th>Nama Ikan</th>
+                        <th>Jumlah</th>
+                        <th>Tanggal Jawa</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="catchModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah / Edit Tangkapan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="catchForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="id_tangkapan">
+
+                        <div class="mb-3">
+                            <label class="form-label">Perjalanan</label>
+                            <select id="id_perjalanan" class="form-select" required>
+                                <option value="">Pilih perjalanan...</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Jenis Ikan</label>
+                            <input type="text" id="jenis_ikan" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nama Ikan</label>
+                            <input type="text" id="nama_ikan" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Jumlah</label>
+                            <input type="number" id="jumlah_ikan" class="form-control" min="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tanggal Jawa</label>
+                            <input type="text" id="tanggal_jawa" class="form-control" placeholder="contoh: 12 Suro 1950">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const api = 'tangkapan_api.php';
+        const tripsApi = 'perjalanan_api.php';
+        const catchModal = new bootstrap.Modal(document.getElementById('catchModal'));
+
+        $(document).ready(function() {
+            loadCatches();
+            loadTripsOptions();
+
+            $('#btnAdd').on('click', function() {
+                $('#catchForm')[0].reset();
+                $('#id_tangkapan').val('');
+                catchModal.show();
+            });
+
+            $('#catchForm').on('submit', function(e) {
+                e.preventDefault();
+                const id = $('#id_tangkapan').val();
+                const data = {
+                    id_perjalanan: parseInt($('#id_perjalanan').val()),
+                    jenis_ikan: $('#jenis_ikan').val().trim(),
+                    nama_ikan: $('#nama_ikan').val().trim(),
+                    jumlah_ikan: parseInt($('#jumlah_ikan').val()),
+                    tanggal_jawa: $('#tanggal_jawa').val().trim()
+                };
+
+                if (id) {
+                    data.id_tangkapan = parseInt(id);
+                    $.ajax({
+                        url: api,
+                        method: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(res) { catchModal.hide(); loadCatches(); },
+                        error: handleAjaxError
+                    });
+                } else {
+                    $.ajax({
+                        url: api,
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(res) { catchModal.hide(); loadCatches(); },
+                        error: handleAjaxError
+                    });
+                }
+            });
+
+            $('#catchesTable').on('click', '.btn-edit', function() {
+                const id = $(this).data('id');
+                $.get(api + '?id=' + id, function(res) {
+                    if (res.success && res.data) {
+                        $('#id_tangkapan').val(res.data.id_tangkapan);
+                        $('#id_perjalanan').val(res.data.id_perjalanan);
+                        $('#jenis_ikan').val(res.data.jenis_ikan);
+                        $('#nama_ikan').val(res.data.nama_ikan);
+                        $('#jumlah_ikan').val(res.data.jumlah_ikan);
+                        $('#tanggal_jawa').val(res.data.tanggal_jawa);
+                        catchModal.show();
+                    }
+                }).fail(handleAjaxError);
+            });
+
+            $('#catchesTable').on('click', '.btn-delete', function() {
+                const id = $(this).data('id');
+                if (!confirm('Hapus tangkapan ID ' + id + '?')) return;
+                $.ajax({
+                    url: api,
+                    method: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ id_tangkapan: id }),
+                    success: function(res) { loadCatches(); },
+                    error: handleAjaxError
+                });
+            });
+        });
+
+        function loadTripsOptions() {
+            $.get(tripsApi, function(res) {
+                if (!res.success) return;
+                const select = $('#id_perjalanan').empty();
+                select.append('<option value="">Pilih perjalanan...</option>');
+                res.data.forEach(function(t) {
+                    select.append('<option value="'+t.id_perjalanan+'">'+t.id_perjalanan+' — '+t.waktu_mulai+'</option>');
+                });
+            }).fail(handleAjaxError);
+        }
+
+        function loadCatches() {
+            $.get(api, function(res) {
+                if (!res.success) return;
+                const tbody = $('#catchesTable tbody').empty();
+                res.data.forEach(function(row) {
+                    const tr = $('<tr>');
+                    tr.append($('<td>').text(row.id_tangkapan));
+                    tr.append($('<td>').text(row.id_perjalanan));
+                    tr.append($('<td>').text(row.jenis_ikan));
+                    tr.append($('<td>').text(row.nama_ikan));
+                    tr.append($('<td>').text(row.jumlah_ikan));
+                    tr.append($('<td>').text(row.tanggal_jawa));
+                    const actions = $('<td>');
+                    actions.append('<button class="btn btn-sm btn-outline-primary me-2 btn-edit" data-id="'+row.id_tangkapan+'">Edit</button>');
+                    actions.append('<button class="btn btn-sm btn-outline-danger btn-delete" data-id="'+row.id_tangkapan+'">Hapus</button>');
+                    tr.append(actions);
+                    tbody.append(tr);
+                });
+            }).fail(handleAjaxError);
+        }
+
+        function handleAjaxError(xhr) {
+            if (xhr.status === 401) {
+                alert('Sesi berakhir. Silakan login ulang.');
+                window.location.href = 'login.html';
+                return;
+            }
+            alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message || xhr.statusText));
+        }
+    </script>
+</body>
+</html>

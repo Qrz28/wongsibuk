@@ -133,8 +133,8 @@ $user_email = $_SESSION['email'];
             <div class="col-md-2 sidebar">
                 <nav class="nav flex-column">
                     <a class="nav-link active" href="#dashboard">Dashboard</a>
-                    <a class="nav-link" href="#perjalanan">Perjalanan</a>
-                    <a class="nav-link" href="#tangkapan">Tangkapan</a>
+                    <a class="nav-link" href="perjalanan.html">Perjalanan</a>
+                    <a class="nav-link" href="tangkapan.html">Tangkapan</a>
                     <a class="nav-link" href="#spot">Spot Memancing</a>
                     <a class="nav-link" href="#laporan">Laporan</a>
                 </nav>
@@ -157,7 +157,8 @@ $user_email = $_SESSION['email'];
                                 <div class="card-icon">🎣</div>
                                 <h5 class="card-title">Perjalanan</h5>
                                 <p class="card-text text-muted">Kelola perjalanan memancing Anda</p>
-                                <a href="#" class="btn btn-sm btn-primary">Lihat</a>
+                                <a href="perjalanan.html" class="btn btn-sm btn-primary">Lihat</a>
+                                
                             </div>
                         </div>
                     </div>
@@ -168,7 +169,7 @@ $user_email = $_SESSION['email'];
                                 <div class="card-icon">🐟</div>
                                 <h5 class="card-title">Tangkapan</h5>
                                 <p class="card-text text-muted">Catat hasil tangkapan Anda</p>
-                                <a href="#" class="btn btn-sm btn-primary">Lihat</a>
+                                <a href="tangkapan.html" class="btn btn-sm btn-primary">Lihat</a>
                             </div>
                         </div>
                     </div>

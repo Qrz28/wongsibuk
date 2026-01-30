@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Perjalanan - Fishing Log</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">🎣 Fishing Log</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Perjalanan</h3>
+            <button id="btnAdd" class="btn btn-primary">Tambah Perjalanan</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped" id="tripsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Waktu Mulai</th>
+                        <th>Waktu Selesai</th>
+                        <th>Jarak (km)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="tripModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah / Edit Perjalanan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="tripForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="id_perjalanan">
+                        <div class="mb-3">
+                            <label class="form-label">Waktu Mulai</label>
+                            <input type="datetime-local" id="waktu_mulai" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Waktu Selesai</label>
+                            <input type="datetime-local" id="waktu_selesai" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jarak (km)</label>
+                            <input type="number" step="0.01" id="jarak_lokasi" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const api = 'perjalanan_api.php';
+        const tripModal = new bootstrap.Modal(document.getElementById('tripModal'));
+
+        $(document).ready(function() {
+            loadTrips();
+
+            $('#btnAdd').on('click', function() {
+                $('#tripForm')[0].reset();
+                $('#id_perjalanan').val('');
+                tripModal.show();
+            });
+
+            $('#tripForm').on('submit', function(e) {
+                e.preventDefault();
+                const id = $('#id_perjalanan').val();
+                const data = {
+                    waktu_mulai: $('#waktu_mulai').val().replace('T', ' '),
+                    waktu_selesai: $('#waktu_selesai').val().replace('T', ' '),
+                    jarak_lokasi: parseFloat($('#jarak_lokasi').val())
+                };
+
+                if (id) {
+                    data.id_perjalanan = parseInt(id);
+                    $.ajax({
+                        url: api,
+                        method: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(res) {
+                            tripModal.hide();
+                            loadTrips();
+                        },
+                        error: handleAjaxError
+                    });
+                } else {
+                    $.ajax({
+                        url: api,
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(res) {
+                            tripModal.hide();
+                            loadTrips();
+                        },
+                        error: handleAjaxError
+                    });
+                }
+            });
+
+            $('#tripsTable').on('click', '.btn-edit', function() {
+                const id = $(this).data('id');
+                $.get(api + '?id=' + id, function(res) {
+                    if (res.success && res.data) {
+                        $('#id_perjalanan').val(res.data.id_perjalanan);
+                        $('#waktu_mulai').val(res.data.waktu_mulai.replace(' ', 'T'));
+                        $('#waktu_selesai').val(res.data.waktu_selesai.replace(' ', 'T'));
+                        $('#jarak_lokasi').val(res.data.jarak_lokasi);
+                        tripModal.show();
+                    }
+                }).fail(handleAjaxError);
+            });
+
+            $('#tripsTable').on('click', '.btn-delete', function() {
+                const id = $(this).data('id');
+                if (!confirm('Hapus perjalanan ID ' + id + '?')) return;
+                $.ajax({
+                    url: api,
+                    method: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ id_perjalanan: id }),
+                    success: function(res) {
+                        loadTrips();
+                    },
+                    error: handleAjaxError
+                });
+            });
+        });
+
+        function loadTrips() {
+            $.get(api, function(res) {
+                if (!res.success) return;
+                const tbody = $('#tripsTable tbody').empty();
+                res.data.forEach(function(row) {
+                    const tr = $('<tr>');
+                    tr.append($('<td>').text(row.id_perjalanan));
+                    tr.append($('<td>').text(row.waktu_mulai));
+                    tr.append($('<td>').text(row.waktu_selesai));
+                    tr.append($('<td>').text(row.jarak_lokasi));
+                    const actions = $('<td>');
+                    actions.append('<button class="btn btn-sm btn-outline-primary me-2 btn-edit" data-id="'+row.id_perjalanan+'">Edit</button>');
+                    actions.append('<button class="btn btn-sm btn-outline-danger btn-delete" data-id="'+row.id_perjalanan+'">Hapus</button>');
+                    tr.append(actions);
+                    tbody.append(tr);
+                });
+            }).fail(handleAjaxError);
+        }
+
+        function handleAjaxError(xhr) {
+            if (xhr.status === 401) {
+                alert('Sesi berakhir. Silakan login ulang.');
+                window.location.href = 'login.html';
+                return;
+            }
+            alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message || xhr.statusText));
+        }
+    </script>
+</body>
+</html>
