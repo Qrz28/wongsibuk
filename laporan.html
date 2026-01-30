@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Laporan - Fishing Log</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 20px;
+        }
+        
+        .container-main {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .page-header h3 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card h6 {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-card.accent1 { border-left-color: #667eea; }
+        .stat-card.accent2 { border-left-color: #764ba2; }
+        .stat-card.accent3 { border-left-color: #ffc107; }
+        .stat-card.accent4 { border-left-color: #28a745; }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .table-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .table {
+            margin: 0;
+        }
+        
+        .table thead {
+            background: #f8f9fa;
+        }
+        
+        .table thead th {
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #333;
+            padding: 15px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        .badge-custom {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .badge-success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .badge-warning {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+        
+        .btn-export:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a4193 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">🎣 Fishing Log</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="perjalanan.html">Perjalanan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="tangkapan.html">Tangkapan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="spot_memancing.html">Spot Memancing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="laporan.html">Laporan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout.php">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container container-main">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h3>📊 Laporan Memancing</h3>
+            <button id="btnExport" class="btn btn-export">
+                📥 Export PDF
+            </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row" id="statsContainer">
+            <!-- Akan di-load via AJAX -->
+        </div>
+
+        <!-- Summary Table -->
+        <div class="table-container">
+            <h5 class="table-title">📋 Ringkasan Perjalanan</h5>
+            <div class="table-responsive">
+                <table class="table table-hover" id="summaryTable">
+                    <thead>
+                        <tr>
+                            <th>ID Perjalanan</th>
+                            <th>Waktu Mulai</th>
+                            <th>Waktu Selesai</th>
+                            <th>Jarak (km)</th>
+                            <th>Total Tangkapan</th>
+                            <th>Jenis Ikan</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="noDataSummary" class="no-data" style="display: none;">
+                <p>📭 Belum ada data perjalanan</p>
+            </div>
+        </div>
+
+        <!-- Catches Detail Table -->
+        <div class="table-container">
+            <h5 class="table-title">🐟 Detail Tangkapan</h5>
+            <div class="table-responsive">
+                <table class="table table-hover" id="catchesDetailTable">
+                    <thead>
+                        <tr>
+                            <th>ID Tangkapan</th>
+                            <th>Perjalanan</th>
+                            <th>Jenis Ikan</th>
+                            <th>Nama Ikan</th>
+                            <th>Jumlah</th>
+                            <th>Tanggal Jawa</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="noDataCatches" class="no-data" style="display: none;">
+                <p>📭 Belum ada data tangkapan</p>
+            </div>
+        </div>
+
+        <!-- Spots Summary Table -->
+        <div class="table-container">
+            <h5 class="table-title">📍 Daftar Spot Memancing</h5>
+            <div class="table-responsive">
+                <table class="table table-hover" id="spotsDetailTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Alamat</th>
+                            <th>Jenis Spot</th>
+                            <th>Deskripsi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="noDataSpots" class="no-data" style="display: none;">
+                <p>📭 Belum ada data spot memancing</p>
+            </div>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="table-container">
+            <h5 class="table-title">📈 Statistik Ikan Tangkapan</h5>
+            <div class="table-responsive">
+                <table class="table table-hover" id="statsDetailTable">
+                    <thead>
+                        <tr>
+                            <th>Jenis Ikan</th>
+                            <th>Total Tangkapan</th>
+                            <th>Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="noDataStats" class="no-data" style="display: none;">
+                <p>📭 Belum ada statistik ikan</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const api = 'laporan_api.php';
+        const tripsApi = 'perjalanan_api.php';
+        const catchesApi = 'tangkapan_api.php';
+        const spotsApi = 'spot_api.php';
+
+        $(document).ready(function() {
+            loadReport();
+            
+            // Export PDF
+            $('#btnExport').on('click', function() {
+                exportPDF();
+            });
+        });
+
+        function loadReport() {
+            $.get(api, function(res) {
+                if (!res.success) {
+                    showAlert('Gagal memuat laporan', 'danger');
+                    return;
+                }
+
+                // Load statistics
+                loadStatistics(res.data.stats);
+                // Load summary
+                loadSummary(res.data.trips);
+                // Load catches detail
+                loadCatchesDetail(res.data.catches);
+                // Load spots
+                loadSpots(res.data.spots);
+                // Load statistics detail
+                loadStatsDetail(res.data.catches);
+            }).fail(function() {
+                showAlert('Gagal memuat laporan', 'danger');
+            });
+        }
+
+        function loadStatistics(stats) {
+            const html = `
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card accent1">
+                        <h6>Total Perjalanan</h6>
+                        <div class="stat-value">${stats.total_trips}</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card accent2">
+                        <h6>Total Tangkapan</h6>
+                        <div class="stat-value">${stats.total_catches}</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card accent3">
+                        <h6>Total Jarak Tempuh</h6>
+                        <div class="stat-value">${stats.total_distance.toFixed(1)} km</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card accent4">
+                        <h6>Total Spot</h6>
+                        <div class="stat-value">${stats.total_spots}</div>
+                    </div>
+                </div>
+            `;
+            $('#statsContainer').html(html);
+        }
+
+        function loadSummary(trips) {
+            const tbody = $('#summaryTable tbody').empty();
+            
+            if (trips.length === 0) {
+                $('#summaryTable').hide();
+                $('#noDataSummary').show();
+                return;
+            }
+
+            $('#summaryTable').show();
+            $('#noDataSummary').hide();
+
+            trips.forEach(function(trip) {
+                const jeniIkan = trip.fish_types.length > 0 
+                    ? trip.fish_types.map(f => `<span class="badge-custom badge-info">${f}</span>`).join(' ')
+                    : '<span class="text-muted">-</span>';
+
+                const tr = `<tr>
+                    <td><strong>#${trip.id_perjalanan}</strong></td>
+                    <td>${formatDateTime(trip.waktu_mulai)}</td>
+                    <td>${formatDateTime(trip.waktu_selesai)}</td>
+                    <td>${trip.jarak_lokasi.toFixed(2)} km</td>
+                    <td><span class="badge bg-primary">${trip.total_catches}</span></td>
+                    <td>${jeniIkan}</td>
+                </tr>`;
+                tbody.append(tr);
+            });
+        }
+
+        function loadCatchesDetail(catches) {
+            const tbody = $('#catchesDetailTable tbody').empty();
+            
+            if (catches.length === 0) {
+                $('#catchesDetailTable').hide();
+                $('#noDataCatches').show();
+                return;
+            }
+
+            $('#catchesDetailTable').show();
+            $('#noDataCatches').hide();
+
+            catches.forEach(function(catch_data) {
+                const tr = `<tr>
+                    <td><strong>#${catch_data.id_tangkapan}</strong></td>
+                    <td>#${catch_data.id_perjalanan}</td>
+                    <td><span class="badge-custom badge-success">${htmlEscape(catch_data.jenis_ikan)}</span></td>
+                    <td>${htmlEscape(catch_data.nama_ikan)}</td>
+                    <td><span class="badge bg-info">${catch_data.jumlah_ikan}</span></td>
+                    <td>${catch_data.tanggal_jawa || '-'}</td>
+                </tr>`;
+                tbody.append(tr);
+            });
+        }
+
+        function loadSpots(spots) {
+            const tbody = $('#spotsDetailTable tbody').empty();
+            
+            if (spots.length === 0) {
+                $('#spotsDetailTable').hide();
+                $('#noDataSpots').show();
+                return;
+            }
+
+            $('#spotsDetailTable').show();
+            $('#noDataSpots').hide();
+
+            spots.forEach(function(spot) {
+                const deskripsi = spot.deskripsi_spot.length > 50
+                    ? spot.deskripsi_spot.substring(0, 50) + '...'
+                    : spot.deskripsi_spot;
+
+                const tr = `<tr>
+                    <td><strong>#${spot.id_spot}</strong></td>
+                    <td>${htmlEscape(spot.alamat)}</td>
+                    <td><span class="badge-custom badge-warning">${htmlEscape(spot.jenis_spot)}</span></td>
+                    <td title="${htmlEscape(spot.deskripsi_spot)}">${htmlEscape(deskripsi)}</td>
+                </tr>`;
+                tbody.append(tr);
+            });
+        }
+
+        function loadStatsDetail(catches) {
+            const tbody = $('#statsDetailTable tbody').empty();
+            
+            // Count by fish type
+            const fishStats = {};
+            catches.forEach(function(c) {
+                const key = c.jenis_ikan;
+                if (!fishStats[key]) {
+                    fishStats[key] = 0;
+                }
+                fishStats[key] += c.jumlah_ikan;
+            });
+
+            if (Object.keys(fishStats).length === 0) {
+                $('#statsDetailTable').hide();
+                $('#noDataStats').show();
+                return;
+            }
+
+            $('#statsDetailTable').show();
+            $('#noDataStats').hide();
+
+            const total = Object.values(fishStats).reduce((a, b) => a + b, 0);
+
+            // Sort by count descending
+            const sorted = Object.entries(fishStats).sort((a, b) => b[1] - a[1]);
+
+            sorted.forEach(function([jenis, count]) {
+                const percentage = ((count / total) * 100).toFixed(1);
+                const tr = `<tr>
+                    <td>${htmlEscape(jenis)}</td>
+                    <td><span class="badge bg-primary">${count}</span></td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar" style="width: ${percentage}%;" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
+                                ${percentage}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
+                tbody.append(tr);
+            });
+        }
+
+        function exportPDF() {
+            alert('Fitur Export PDF akan segera hadir! 📥');
+        }
+
+        function formatDateTime(datetime) {
+            if (!datetime) return '-';
+            const date = new Date(datetime);
+            return date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+        }
+
+        function htmlEscape(text) {
+            return $('<div/>').text(text).html();
+        }
+
+        function showAlert(message, type) {
+            const alertHtml = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+            
+            $('.container-main').prepend(alertHtml);
+            
+            setTimeout(() => {
+                $('.alert').fadeOut(() => $('.alert').remove());
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

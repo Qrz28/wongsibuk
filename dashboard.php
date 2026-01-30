@@ -122,10 +122,10 @@ $user_email = $_SESSION['email'];
                         <a class="nav-link" href="tangkapan.html">Tangkapan</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#spot">Spot Memancing</a>
+                        <a class="nav-link" href="spot_memancing.html">Spot Memancing</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#laporan">Laporan</a>
+                        <a class="nav-link" href="laporan.html">Laporan</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
@@ -185,7 +185,7 @@ $user_email = $_SESSION['email'];
                                 <div class="card-icon">📍</div>
                                 <h5 class="card-title">Spot Memancing</h5>
                                 <p class="card-text text-muted">Temukan spot terbaik</p>
-                                <a href="#" class="btn btn-sm btn-primary">Lihat</a>
+                                <a href="spot_memancing.html" class="btn btn-sm btn-primary">Lihat</a>
                             </div>
                         </div>
                     </div>
@@ -196,7 +196,7 @@ $user_email = $_SESSION['email'];
                                 <div class="card-icon">📊</div>
                                 <h5 class="card-title">Laporan</h5>
                                 <p class="card-text text-muted">Lihat laporan statistik</p>
-                                <a href="#" class="btn btn-sm btn-primary">Lihat</a>
+                                <a href="laporan.html" class="btn btn-sm btn-primary">Lihat</a>
                             </div>
                         </div>
                     </div>
