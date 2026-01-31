@@ -7,118 +7,348 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+        .hero-section {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="waves" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 20 Q10 10 20 20 Q30 30 40 20 V40 H0 Z" fill="rgba(255,255,255,0.05)"/><path d="M0 25 Q10 15 20 25 Q30 35 40 25 V40 H0 Z" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23waves)"/></svg>');
+            padding: 60px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
-        
-        .navbar-brand {
-            font-weight: 600;
-            font-size: 20px;
+
+        .hero-content {
+            text-align: center;
+            color: white;
         }
-        
-        .container-main {
-            margin-top: 30px;
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
             margin-bottom: 30px;
+            opacity: 0.9;
         }
-        
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 24px;
+            color: #667eea !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #555 !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #667eea !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            color: #667eea !important;
+            font-weight: 600;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            margin: -20px 20px 40px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
         .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
         }
-        
-        .page-header h3 {
-            margin: 0;
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
             color: #333;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
+
+        .page-title i {
+            color: #667eea;
+            font-size: 2.8rem;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
         .table-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .table {
             background: white;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-        
-        .table {
-            margin: 0;
-        }
-        
+
         .table thead {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
+        .table thead th {
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 20px 15px;
+            border: none;
+        }
+
         .table tbody tr {
             transition: all 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
         }
-        
+
         .table tbody tr:hover {
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            transform: scale(1.01);
         }
-        
-        .btn-sm {
+
+        .table tbody td {
+            padding: 18px 15px;
+            vertical-align: middle;
+            font-weight: 500;
+        }
+
+        .spot-id {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .spot-type-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .spot-type-sungai {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .spot-type-danau {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+        }
+
+        .spot-type-laut {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+        }
+
+        .spot-type-waduk {
+            background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%);
+            color: white;
+        }
+
+        .spot-type-kolam {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+        }
+
+        .spot-type-rawa {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+
+        .spot-type-lainnya {
+            background: linear-gradient(135deg, #e83e8c 0%, #dc3545 100%);
+            color: white;
+        }
+
+        .btn-action {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
             margin: 2px;
         }
-        
+
         .btn-edit {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
         }
-        
+
         .btn-edit:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #218838 0%, #1aa085 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
             color: white;
         }
-        
+
         .btn-delete {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
             color: white;
         }
-        
+
         .btn-delete:hover {
-            background-color: #c82333;
+            background: linear-gradient(135deg, #c82333 0%, #e8680d 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
             color: white;
         }
-        
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
             color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+            padding: 25px;
         }
-        
+
+        .modal-title {
+            font-weight: 600;
+            font-size: 20px;
+        }
+
         .form-label {
             font-weight: 600;
             color: #333;
-            margin-top: 10px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
-        
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #2196F3;
+            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.15);
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.15);
+        }
+
+        .btn-modal {
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .alert {
+            border-radius: 15px;
             border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
         }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5568d3 0%, #6a4193 100%);
-        }
-        
+
         .no-data {
             text-align: center;
-            padding: 40px;
-            color: #999;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-data i {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-data h5 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .no-data p {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .main-container {
+                margin: -10px 10px 20px;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -145,6 +375,9 @@
                         <a class="nav-link active" href="spot_memancing.html">Spot Memancing</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="laporan.html">Laporan</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="logout.php">Logout</a>
                     </li>
                 </ul>
@@ -152,13 +385,25 @@
         </div>
     </nav>
 
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title"><i class="fas fa-map-marker-alt"></i> Spot Memancing</h1>
+                <p class="hero-subtitle">Temukan dan kelola lokasi memancing terbaik di sekitar Anda</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
-    <div class="container container-main">
-        <!-- Page Header -->
+    <div class="main-container">
         <div class="page-header">
-            <h3>📍 Spot Memancing</h3>
-            <button id="btnAdd" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Tambah Spot
+            <h2 class="page-title">
+                <i class="fas fa-map-marked-alt"></i>
+                Daftar Spot Memancing
+            </h2>
+            <button id="btnAdd" class="btn btn-add">
+                <i class="fas fa-plus me-2"></i>Tambah Spot
             </button>
         </div>
 

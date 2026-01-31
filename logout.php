@@ -1,10 +1,8 @@
 <?php
 /**
- * Logout API Endpoint
+ * Logout Page
  * Fishing Log Application
  */
-
-header('Content-Type: application/json; charset=utf-8');
 
 // Start session
 session_start();
@@ -17,9 +15,7 @@ if (isset($_COOKIE['fishing_log_user'])) {
     setcookie('fishing_log_user', '', time() - 3600, '/');
 }
 
-echo json_encode([
-    'success' => true,
-    'message' => 'Logout berhasil',
-    'redirect' => 'login.html'
-]);
+// Redirect to login page
+header('Location: login.html');
+exit();
 ?>

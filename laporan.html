@@ -5,153 +5,326 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Laporan - Fishing Log</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+        .hero-section {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="chart" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="21" height="21" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><circle cx="8" cy="8" r="2" fill="rgba(255,255,255,0.08)"/><circle cx="17" cy="17" r="2" fill="rgba(255,255,255,0.06)"/><line x1="8" y1="8" x2="17" y2="17" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23chart)"/></svg>');
+            padding: 60px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
-        
-        .navbar-brand {
-            font-weight: 600;
-            font-size: 20px;
+
+        .hero-content {
+            text-align: center;
+            color: white;
         }
-        
-        .container-main {
-            margin-top: 30px;
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
             margin-bottom: 30px;
+            opacity: 0.9;
         }
-        
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 24px;
+            color: #667eea !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #555 !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #667eea !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            color: #667eea !important;
+            font-weight: 600;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            margin: -20px 20px 40px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
         .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
         }
-        
-        .page-header h3 {
-            margin: 0;
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
             color: #333;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
+
+        .page-title i {
+            color: #667eea;
+            font-size: 2.8rem;
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .stats-section {
+            margin-bottom: 50px;
+        }
+
         .stat-card {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #5a67d8);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 3rem;
             margin-bottom: 20px;
-            border-left: 4px solid #667eea;
+            opacity: 0.8;
         }
-        
+
+        .stat-card.accent1 .stat-icon { color: #667eea; }
+        .stat-card.accent2 .stat-icon { color: #2196F3; }
+        .stat-card.accent3 .stat-icon { color: #FF9800; }
+        .stat-card.accent4 .stat-icon { color: #E91E63; }
+
         .stat-card h6 {
-            color: #999;
-            font-size: 12px;
+            color: #666;
+            font-size: 14px;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-weight: 600;
+            letter-spacing: 1px;
         }
-        
+
         .stat-card .stat-value {
-            font-size: 28px;
+            font-size: 2.5rem;
             font-weight: 700;
-            color: #667eea;
+            color: #333;
+            margin-bottom: 10px;
         }
-        
-        .stat-card.accent1 { border-left-color: #667eea; }
-        .stat-card.accent2 { border-left-color: #764ba2; }
-        .stat-card.accent3 { border-left-color: #ffc107; }
-        .stat-card.accent4 { border-left-color: #28a745; }
-        
+
+        .stat-card .stat-label {
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
         .table-container {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             overflow: hidden;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-        
+
         .table-title {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 25px 30px;
             margin: 0;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
+
+        .table-title i {
+            font-size: 24px;
+        }
+
         .table {
             margin: 0;
         }
-        
+
         .table thead {
             background: #f8f9fa;
         }
-        
+
         .table thead th {
             border-bottom: 2px solid #e0e0e0;
             font-weight: 600;
             color: #333;
-            padding: 15px;
+            padding: 20px 15px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
+
         .table tbody tr {
             transition: all 0.3s ease;
             border-bottom: 1px solid #f0f0f0;
         }
-        
+
         .table tbody tr:hover {
-            background-color: #f9f9f9;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            transform: scale(1.01);
         }
-        
+
         .table tbody td {
-            padding: 12px 15px;
+            padding: 18px 15px;
             vertical-align: middle;
+            font-weight: 500;
         }
-        
+
         .badge-custom {
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 25px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
-        
+
         .badge-info {
-            background: #e3f2fd;
-            color: #1976d2;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
         }
-        
+
         .badge-success {
-            background: #e8f5e9;
-            color: #388e3c;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
-        
+
         .badge-warning {
-            background: #fff3e0;
-            color: #f57c00;
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
         }
-        
+
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
         .no-data {
             text-align: center;
-            padding: 40px;
-            color: #999;
+            padding: 60px 20px;
+            color: #666;
         }
-        
-        .btn-export {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .no-data i {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-data h5 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .no-data p {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .alert {
+            border-radius: 15px;
             border: none;
-            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-weight: 500;
         }
-        
-        .btn-export:hover {
-            background: linear-gradient(135deg, #5568d3 0%, #6a4193 100%);
-            color: white;
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .main-container {
+                margin: -10px 10px 20px;
+                padding: 20px;
+            }
+
+            .stat-card {
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -188,14 +361,33 @@
         </div>
     </nav>
 
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title"><i class="fas fa-chart-line"></i> Laporan Memancing</h1>
+                <p class="hero-subtitle">Pantau performa dan analisis data tangkapan ikan Anda</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
-    <div class="container container-main">
-        <!-- Page Header -->
+    <div class="main-container">
         <div class="page-header">
-            <h3>📊 Laporan Memancing</h3>
+            <h2 class="page-title">
+                <i class="fas fa-chart-bar"></i>
+                Dashboard Laporan
+            </h2>
             <button id="btnExport" class="btn btn-export">
-                📥 Export PDF
+                <i class="fas fa-download me-2"></i>Export PDF
             </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-section">
+            <div class="row" id="statsContainer">
+                <!-- Akan di-load via AJAX -->
+            </div>
         </div>
 
         <!-- Statistics Cards -->
@@ -335,28 +527,36 @@
 
         function loadStatistics(stats) {
             const html = `
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 mb-4">
                     <div class="stat-card accent1">
+                        <i class="fas fa-route stat-icon"></i>
                         <h6>Total Perjalanan</h6>
                         <div class="stat-value">${stats.total_trips}</div>
+                        <div class="stat-label">Perjalanan tercatat</div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 mb-4">
                     <div class="stat-card accent2">
+                        <i class="fas fa-fish stat-icon"></i>
                         <h6>Total Tangkapan</h6>
                         <div class="stat-value">${stats.total_catches}</div>
+                        <div class="stat-label">Ikan tertangkap</div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 mb-4">
                     <div class="stat-card accent3">
+                        <i class="fas fa-road stat-icon"></i>
                         <h6>Total Jarak Tempuh</h6>
                         <div class="stat-value">${stats.total_distance.toFixed(1)} km</div>
+                        <div class="stat-label">Jarak ditempuh</div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-3 mb-4">
                     <div class="stat-card accent4">
+                        <i class="fas fa-map-marker-alt stat-icon"></i>
                         <h6>Total Spot</h6>
                         <div class="stat-value">${stats.total_spots}</div>
+                        <div class="stat-label">Lokasi memancing</div>
                     </div>
                 </div>
             `;
