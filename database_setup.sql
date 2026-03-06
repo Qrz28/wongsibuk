@@ -40,15 +40,15 @@ CREATE TABLE IF NOT EXISTS catatan_memancing (
     FOREIGN KEY (id_spot) REFERENCES spot_memancing(id_spot) ON DELETE CASCADE
 );
 
--- Tabel tangkapan (catches) with added tanggal_jawa column
+-- Tabel tangkapan (catches) with added tanggal_jawa column and relasi ke catatan_memancing
 CREATE TABLE IF NOT EXISTS tangkapan (
     id_tangkapan INT PRIMARY KEY AUTO_INCREMENT,
-    id_perjalanan INT NOT NULL,
+    id_catatan INT NOT NULL,
     jenis_ikan VARCHAR(100) NOT NULL,
     nama_ikan VARCHAR(100) NOT NULL,
     jumlah_ikan INT NOT NULL,
     tanggal_jawa VARCHAR(100),
-    FOREIGN KEY (id_perjalanan) REFERENCES perjalanan(id_perjalanan) ON DELETE CASCADE
+    FOREIGN KEY (id_catatan) REFERENCES catatan_memancing(id_catatan) ON DELETE CASCADE
 );
 
 -- Tabel foto (photos)

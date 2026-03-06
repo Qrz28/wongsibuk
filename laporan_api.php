@@ -41,10 +41,11 @@ try {
     $trips = [];
 
     while ($trip = $tripsResult->fetch_assoc()) {
-        // Get catches for this trip
-        $catchesQuery = "SELECT jenis_ikan 
-                         FROM tangkapan 
-                         WHERE id_perjalanan = ?";
+        // Get catches for this trip via catatan_memancing
+        $catchesQuery = "SELECT t.jenis_ikan 
+                         FROM tangkapan t
+                         JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
+                         WHERE c.id_perjalanan = ?";
         $catchesStmt = $conn->prepare($catchesQuery);
         $catchesStmt->bind_param('i', $trip['id_perjalanan']);
         $catchesStmt->execute();
@@ -64,10 +65,11 @@ try {
     }
     $tripsStmt->close();
 
-    // Get all catches for this user (via perjalanan)
-    $catchesQuery = "SELECT t.id_tangkapan, t.id_perjalanan, t.jenis_ikan, t.nama_ikan, t.jumlah_ikan, t.tanggal_jawa
+    // Get all catches for this user (via catatan_memancing -> perjalanan)
+    $catchesQuery = "SELECT t.id_tangkapan, t.id_catatan, t.jenis_ikan, t.nama_ikan, t.jumlah_ikan, t.tanggal_jawa
                      FROM tangkapan t
-                     JOIN perjalanan p ON t.id_perjalanan = p.id_perjalanan
+                     JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
+                     JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
                      WHERE p.id_pengguna = ?
                      ORDER BY t.id_tangkapan DESC";
     $catchesStmt = $conn->prepare($catchesQuery);

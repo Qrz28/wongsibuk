@@ -375,7 +375,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Perjalanan</th>
+                        <th>Catatan</th>
                         <th>Jenis Ikan</th>
                         <th>Nama Ikan</th>
                         <th>Jumlah</th>
@@ -401,9 +401,9 @@
                         <input type="hidden" id="id_tangkapan">
 
                         <div class="mb-3">
-                            <label class="form-label">Perjalanan</label>
-                            <select id="id_perjalanan" class="form-select" required>
-                                <option value="">Pilih perjalanan...</option>
+                            <label class="form-label">Catatan Memancing</label>
+                            <select id="id_catatan" class="form-select" required>
+                                <option value="">Pilih catatan...</option>
                             </select>
                         </div>
 
@@ -440,12 +440,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const api = 'tangkapan_api.php';
-        const tripsApi = 'perjalanan_api.php';
+        const catatanApi = 'catatan_api.php';
         const catchModal = new bootstrap.Modal(document.getElementById('catchModal'));
 
         $(document).ready(function() {
             loadCatches();
-            loadTripsOptions();
+            loadCatatanOptions();
 
             $('#btnAdd').on('click', function() {
                 $('#catchForm')[0].reset();
@@ -457,7 +457,7 @@
                 e.preventDefault();
                 const id = $('#id_tangkapan').val();
                 const data = {
-                    id_perjalanan: parseInt($('#id_perjalanan').val()),
+                    id_catatan: parseInt($('#id_catatan').val()),
                     jenis_ikan: $('#jenis_ikan').val().trim(),
                     nama_ikan: $('#nama_ikan').val().trim(),
                     jumlah_ikan: parseInt($('#jumlah_ikan').val()),
@@ -507,7 +507,7 @@
                 $.get(api + '?id=' + id, function(res) {
                     if (res.success && res.data) {
                         $('#id_tangkapan').val(res.data.id_tangkapan);
-                        $('#id_perjalanan').val(res.data.id_perjalanan);
+                        $('#id_catatan').val(res.data.id_catatan);
                         $('#jenis_ikan').val(res.data.jenis_ikan);
                         $('#nama_ikan').val(res.data.nama_ikan);
                         $('#jumlah_ikan').val(res.data.jumlah_ikan);
@@ -531,13 +531,13 @@
             });
         });
 
-        function loadTripsOptions() {
-            $.get(tripsApi, function(res) {
+        function loadCatatanOptions() {
+            $.get(catatanApi, function(res) {
                 if (!res.success) return;
-                const select = $('#id_perjalanan').empty();
-                select.append('<option value="">Pilih perjalanan...</option>');
-                res.data.forEach(function(t) {
-                    select.append('<option value="'+t.id_perjalanan+'">'+t.id_perjalanan+' — '+t.waktu_mulai+'</option>');
+                const select = $('#id_catatan').empty();
+                select.append('<option value="">Pilih catatan...</option>');
+                res.data.forEach(function(c) {
+                    select.append('<option value="'+c.id_catatan+'">'+c.id_catatan+' — '+(c.catatan ? c.catatan.substring(0, 30) + '...' : 'Catatan #'+c.id_catatan)+' ('+c.waktu_mulai+')</option>');
                 });
             }).fail(handleAjaxError);
         }
@@ -549,7 +549,7 @@
                 res.data.forEach(function(row) {
                     const tr = $('<tr>');
                     tr.append($('<td>').text(row.id_tangkapan));
-                    tr.append($('<td>').text(row.id_perjalanan));
+                    tr.append($('<td>').text(row.id_catatan));
                     tr.append($('<td>').text(row.jenis_ikan));
                     tr.append($('<td>').text(row.nama_ikan));
                     tr.append($('<td>').text(row.jumlah_ikan));

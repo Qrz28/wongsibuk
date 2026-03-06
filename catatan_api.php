@@ -1,8 +1,6 @@
-
-
 <?php
 /**
- * CRUD API untuk tabel `tangkapan` (relasi ke catatan_memancing)
+ * CRUD API untuk tabel `catatan_memancing`
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -32,11 +30,11 @@ try {
     if ($method === 'GET') {
         if (isset($_GET['id'])) {
             $id = (int)$_GET['id'];
-            $query = "SELECT t.id_tangkapan, t.id_catatan, t.jenis_ikan, t.nama_ikan, t.jumlah_ikan, t.tanggal_jawa
-                      FROM tangkapan t
-                      JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
+            $query = "SELECT c.id_catatan, c.id_perjalanan, c.id_spot, c.catatan, p.waktu_mulai, s.alamat
+                      FROM catatan_memancing c
                       JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
-                      WHERE t.id_tangkapan = ? AND p.id_pengguna = ?";
+                      LEFT JOIN spot_memancing s ON c.id_spot = s.id_spot
+                      WHERE c.id_catatan = ? AND p.id_pengguna = ?";
             $stmt = $conn->prepare($query);
             $stmt->bind_param('ii', $id, $user_id);
             $stmt->execute();
@@ -47,12 +45,13 @@ try {
             exit();
         }
 
-        $query = "SELECT t.id_tangkapan, t.id_catatan, t.jenis_ikan, t.nama_ikan, t.jumlah_ikan, t.tanggal_jawa
-                  FROM tangkapan t
-                  JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
+        // Get all catatan for this user
+        $query = "SELECT c.id_catatan, c.id_perjalanan, c.id_spot, c.catatan, p.waktu_mulai, s.alamat
+                  FROM catatan_memancing c
                   JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
+                  LEFT JOIN spot_memancing s ON c.id_spot = s.id_spot
                   WHERE p.id_pengguna = ?
-                  ORDER BY t.id_tangkapan DESC";
+                  ORDER BY c.id_catatan DESC";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
@@ -67,37 +66,33 @@ try {
     }
 
     if ($method === 'POST') {
-        $id_catatan = isset($input['id_catatan']) ? (int)$input['id_catatan'] : null;
-        $jenis_ikan = trim($input['jenis_ikan'] ?? '');
-        $nama_ikan = trim($input['nama_ikan'] ?? '');
-        $jumlah_ikan = isset($input['jumlah_ikan']) ? (int)$input['jumlah_ikan'] : null;
-        $tanggal_jawa = trim($input['tanggal_jawa'] ?? '');
+        $id_perjalanan = isset($input['id_perjalanan']) ? (int)$input['id_perjalanan'] : null;
+        $id_spot = isset($input['id_spot']) ? (int)$input['id_spot'] : null;
+        $catatan = trim($input['catatan'] ?? '');
 
-        if (!$id_catatan || !$jenis_ikan || !$nama_ikan || $jumlah_ikan === null) {
+        if (!$id_perjalanan || !$id_spot) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Field tidak lengkap']);
             exit();
         }
 
-        // verify catatan_memancing belongs to user via perjalanan
-        $q = "SELECT c.id_catatan FROM catatan_memancing c 
-              JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan 
-              WHERE c.id_catatan = ? AND p.id_pengguna = ?";
+        // verify perjalanan belongs to user
+        $q = "SELECT id_perjalanan FROM perjalanan WHERE id_perjalanan = ? AND id_pengguna = ?";
         $s = $conn->prepare($q);
-        $s->bind_param('ii', $id_catatan, $user_id);
+        $s->bind_param('ii', $id_perjalanan, $user_id);
         $s->execute();
         $r = $s->get_result();
         if ($r->num_rows === 0) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Catatan memancing tidak valid']);
+            echo json_encode(['success' => false, 'message' => 'Perjalanan tidak valid']);
             $s->close();
             exit();
         }
         $s->close();
 
-        $query = "INSERT INTO tangkapan (id_catatan, jenis_ikan, nama_ikan, jumlah_ikan, tanggal_jawa) VALUES (?, ?, ?, ?, ?)";
+        $query = "INSERT INTO catatan_memancing (id_perjalanan, id_spot, catatan) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param('issis', $id_catatan, $jenis_ikan, $nama_ikan, $jumlah_ikan, $tanggal_jawa);
+        $stmt->bind_param('iis', $id_perjalanan, $id_spot, $catatan);
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'id' => $conn->insert_id]);
         } else {
@@ -109,39 +104,36 @@ try {
     }
 
     if ($method === 'PUT') {
-        $id = isset($input['id_tangkapan']) ? (int)$input['id_tangkapan'] : null;
-        $id_catatan = isset($input['id_catatan']) ? (int)$input['id_catatan'] : null;
-        $jenis_ikan = trim($input['jenis_ikan'] ?? '');
-        $nama_ikan = trim($input['nama_ikan'] ?? '');
-        $jumlah_ikan = isset($input['jumlah_ikan']) ? (int)$input['jumlah_ikan'] : null;
-        $tanggal_jawa = trim($input['tanggal_jawa'] ?? '');
+        $id = isset($input['id_catatan']) ? (int)$input['id_catatan'] : null;
+        $id_perjalanan = isset($input['id_perjalanan']) ? (int)$input['id_perjalanan'] : null;
+        $id_spot = isset($input['id_spot']) ? (int)$input['id_spot'] : null;
+        $catatan = trim($input['catatan'] ?? '');
 
-        if (!$id || !$id_catatan || !$jenis_ikan || !$nama_ikan || $jumlah_ikan === null) {
+        if (!$id || !$id_perjalanan || !$id_spot) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Field tidak lengkap']);
             exit();
         }
 
-        // verify tangkapan belongs to user via catatan_memancing -> perjalanan
-        $q = "SELECT t.id_tangkapan FROM tangkapan t 
-              JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
-              JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
-              WHERE t.id_tangkapan = ? AND p.id_pengguna = ?";
+        // verify catatan belongs to user via perjalanan
+        $q = "SELECT c.id_catatan FROM catatan_memancing c 
+              JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan 
+              WHERE c.id_catatan = ? AND p.id_pengguna = ?";
         $s = $conn->prepare($q);
         $s->bind_param('ii', $id, $user_id);
         $s->execute();
         $r = $s->get_result();
         if ($r->num_rows === 0) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Tangkapan tidak ditemukan atau tidak punya akses']);
+            echo json_encode(['success' => false, 'message' => 'Catatan tidak ditemukan atau tidak punya akses']);
             $s->close();
             exit();
         }
         $s->close();
 
-        $query = "UPDATE tangkapan SET id_catatan = ?, jenis_ikan = ?, nama_ikan = ?, jumlah_ikan = ?, tanggal_jawa = ? WHERE id_tangkapan = ?";
+        $query = "UPDATE catatan_memancing SET id_perjalanan = ?, id_spot = ?, catatan = ? WHERE id_catatan = ?";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param('issisi', $id_catatan, $jenis_ikan, $nama_ikan, $jumlah_ikan, $tanggal_jawa, $id);
+        $stmt->bind_param('iisi', $id_perjalanan, $id_spot, $catatan, $id);
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'affected' => $stmt->affected_rows]);
         } else {
@@ -153,30 +145,29 @@ try {
     }
 
     if ($method === 'DELETE') {
-        $id = isset($input['id_tangkapan']) ? (int)$input['id_tangkapan'] : null;
+        $id = isset($input['id_catatan']) ? (int)$input['id_catatan'] : null;
         if (!$id) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'ID tidak ditemukan']);
             exit();
         }
 
-        $q = "SELECT t.id_tangkapan FROM tangkapan t 
-              JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
-              JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
-              WHERE t.id_tangkapan = ? AND p.id_pengguna = ?";
+        $q = "SELECT c.id_catatan FROM catatan_memancing c 
+              JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan 
+              WHERE c.id_catatan = ? AND p.id_pengguna = ?";
         $s = $conn->prepare($q);
         $s->bind_param('ii', $id, $user_id);
         $s->execute();
         $r = $s->get_result();
         if ($r->num_rows === 0) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Tangkapan tidak ditemukan atau tidak punya akses']);
+            echo json_encode(['success' => false, 'message' => 'Catatan tidak ditemukan atau tidak punya akses']);
             $s->close();
             exit();
         }
         $s->close();
 
-        $query = "DELETE FROM tangkapan WHERE id_tangkapan = ?";
+        $query = "DELETE FROM catatan_memancing WHERE id_catatan = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('i', $id);
         if ($stmt->execute()) {
