@@ -581,7 +581,7 @@
                     select.append(`<option value="${trip.id_perjalanan}">${optionText}</option>`);
                 });
             }).fail(function() {
-                console.log('Failed to load trips');
+                showAlert('Gagal memuat perjalanan', 'warning');
             });
         }
 

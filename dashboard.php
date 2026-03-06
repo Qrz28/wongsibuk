@@ -482,6 +482,9 @@ $user_email = $_SESSION['email'];
     
     <script>
         $(document).ready(function() {
+            // Load dashboard statistics
+            loadDashboardStats();
+            
             // Handle logout
             $('#logoutBtn').on('click', function(e) {
                 e.preventDefault();
@@ -502,6 +505,45 @@ $user_email = $_SESSION['email'];
                 }
             });
         });
+
+        function loadDashboardStats() {
+            // Load data from laporan API
+            $.ajax({
+                url: 'laporan_api.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        const stats = response.data.stats;
+                        
+                        // Update the stat numbers
+                        $('#totalTrips').text(stats.total_trips || 0);
+                        $('#totalCatches').text(stats.total_catches || 0);
+                        $('#totalSpots').text(stats.total_spots || 0);
+                        
+                        // Calculate active days (unique trip dates)
+                        const trips = response.data.trips || [];
+                        const uniqueDates = new Set(trips.map(t => t.waktu_mulai?.substring(0, 10)));
+                        $('#activeDays').text(uniqueDates.size || 0);
+                    } else {
+                        console.log('Failed to load stats:', response.message);
+                        // Set default values
+                        $('#totalTrips').text('0');
+                        $('#totalCatches').text('0');
+                        $('#totalSpots').text('0');
+                        $('#activeDays').text('0');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error loading stats:', xhr);
+                    // Set default values on error
+                    $('#totalTrips').text('0');
+                    $('#totalCatches').text('0');
+                    $('#totalSpots').text('0');
+                    $('#activeDays').text('0');
+                }
+            });
+        }
     </script>
 </body>
 </html>

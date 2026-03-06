@@ -438,6 +438,11 @@
         <!-- Tab Menu -->
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="spot-tab" data-bs-toggle="tab" data-bs-target="#spot-content" type="button" role="tab">
+                    <i class="fas fa-map-pin me-2"></i>Spot Memancing
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="catatan-tab" data-bs-toggle="tab" data-bs-target="#catatan-content" type="button" role="tab">
                     <i class="fas fa-book me-2"></i>Catatan Memancing
                 </button>
@@ -447,15 +452,41 @@
                     <i class="fas fa-fish me-2"></i>Tangkapan
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="spot-tab" data-bs-toggle="tab" data-bs-target="#spot-content" type="button" role="tab">
-                    <i class="fas fa-map-pin me-2"></i>Spot Memancing
-                </button>
-            </li>
         </ul>
 
         <!-- Tab Content -->
         <div class="tab-content">
+            <!-- Spot Tab -->
+            <div class="tab-pane fade show active" id="spot-content" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="fas fa-map-pin"></i> Daftar Spot Memancing</h5>
+                    <button id="btnAddSpot" class="btn-add">
+                        <i class="fas fa-plus me-2"></i>Tambah Spot
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="spotTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Alamat</th>
+                                    <th>Jenis Spot</th>
+                                    <th>Jarak (km)</th>
+                                    <th>Deskripsi</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="noSpot" class="no-data" style="display: none;">
+                        <i class="fas fa-inbox"></i>
+                        <h5>Belum ada spot</h5>
+                    </div>
+                </div>
+            </div>
+
             <!-- Catatan Tab -->
             <div class="tab-pane fade" id="catatan-content" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -518,37 +549,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Spot Tab -->
-            <div class="tab-pane fade show active" id="spot-content" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5><i class="fas fa-map-pin"></i> Daftar Spot Memancing</h5>
-                    <button id="btnAddSpot" class="btn-add">
-                        <i class="fas fa-plus me-2"></i>Tambah Spot
-                    </button>
-                </div>
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="spotTable">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Alamat</th>
-                                    <th>Jenis Spot</th>
-                                    <th>Jarak (km)</th>
-                                    <th>Deskripsi</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <div id="noSpot" class="no-data" style="display: none;">
-                        <i class="fas fa-inbox"></i>
-                        <h5>Belum ada spot</h5>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -566,6 +566,10 @@
                         <div class="mb-3">
                             <label class="form-label">Tanggal Mulai Perjalanan</label>
                             <input type="datetime-local" id="waktu_mulai" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tanggal Selesai Perjalanan</label>
+                            <input type="datetime-local" id="waktu_selesai" class="form-control" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Jarak Lokasi (km)</label>
@@ -767,7 +771,7 @@
                 spotModal.show();
             });
 
-            // Auto-fill km when trip is selected
+            // Auto-fill km when trip is selected in spot modal
             $('#id_perjalanan_spot').on('change', function() {
                 const tripId = $(this).val();
                 if (tripId) {
@@ -782,15 +786,31 @@
                 }
             });
 
+            // Auto-fill km when spot is selected in catatan form
+            $('#id_spot').on('change', function() {
+                const spotId = $(this).val();
+                if (spotId) {
+                    $.get(spotApi + '?id=' + spotId, function(res) {
+                        if (res.success && res.data) {
+                            $('#jarak_lokasi').val(res.data.jarak_lokasi);
+                        }
+                    }).fail(handleAjaxError);
+                } else {
+                    // Don't clear if user leaves it blank
+                    // $('#jarak_lokasi').val('');
+                }
+            });
+
             $('#catatanForm').on('submit', function(e) {
                 e.preventDefault();
                 const id = $('#id_catatan').val();
                 const waktu_mulai = $('#waktu_mulai').val();
+                const waktu_selesai = $('#waktu_selesai').val();
                 const jarak_lokasi = parseFloat($('#jarak_lokasi').val());
                 const id_spot = $('#id_spot').val();
                 const catatan_text = $('#catatan').val().trim();
 
-                if (!waktu_mulai || !jarak_lokasi || !catatan_text) {
+                if (!waktu_mulai || !waktu_selesai || !jarak_lokasi || !catatan_text) {
                     showAlert('Mohon isi semua field yang wajib', 'warning');
                     return;
                 }
@@ -828,6 +848,7 @@
                     // Create new perjalanan first, then catatan
                     const perjalananData = {
                         waktu_mulai: waktu_mulai,
+                        waktu_selesai: waktu_selesai,
                         jarak_lokasi: jarak_lokasi
                     };
 
@@ -838,7 +859,7 @@
                         data: JSON.stringify(perjalananData),
                         success: function(perjalananRes) {
                             if (perjalananRes.success) {
-                                const newPerjalananId = perjalananRes.data.id_perjalanan;
+                                const newPerjalananId = perjalananRes.id;
                                 
                                 // Now create catatan with the new perjalanan ID
                                 const catatanData = {
@@ -888,6 +909,7 @@
                                 
                                 $('#id_catatan').val(catatan.id_catatan);
                                 $('#waktu_mulai').val(perjalanan.waktu_mulai.substring(0, 16)); // Format for datetime-local
+                                $('#waktu_selesai').val(perjalanan.waktu_selesai.substring(0, 16)); // Format for datetime-local
                                 $('#jarak_lokasi').val(perjalanan.jarak_lokasi);
                                 $('#id_spot').val(catatan.id_spot);
                                 $('#catatan').val(catatan.catatan || '');
@@ -1173,40 +1195,16 @@
         });
 
         function checkDependencies() {
-            // Check if spots exist for catatan tab
-            $.get(spotApi, function(res) {
-                const hasSpots = res.success && res.data.length > 0;
-                if (!hasSpots) {
-                    $('#catatan-tab').addClass('disabled');
-                    $('#catatan-tab').attr('title', 'Buat spot memancing terlebih dahulu');
-                    $('#btnAddCatatan').prop('disabled', true).attr('title', 'Buat spot memancing terlebih dahulu');
-                } else {
-                    $('#catatan-tab').removeClass('disabled');
-                    $('#catatan-tab').removeAttr('title');
-                    $('#btnAddCatatan').prop('disabled', false).removeAttr('title');
-                }
-            }).fail(function() {
-                // If API fails, assume no spots
-                $('#catatan-tab').addClass('disabled');
-                $('#btnAddCatatan').prop('disabled', true);
-            });
-
             // Check if catatan exist for tangkapan tab
+            // Note: We don't disable tabs, just warn users in forms
             $.get(catatanApi, function(res) {
                 const hasCatatan = res.success && res.data.length > 0;
                 if (!hasCatatan) {
-                    $('#tangkapan-tab').addClass('disabled');
-                    $('#tangkapan-tab').attr('title', 'Buat catatan memancing terlebih dahulu');
-                    $('#btnAddTangkapan').prop('disabled', true).attr('title', 'Buat catatan memancing terlebih dahulu');
-                } else {
-                    $('#tangkapan-tab').removeClass('disabled');
-                    $('#tangkapan-tab').removeAttr('title');
-                    $('#btnAddTangkapan').prop('disabled', false).removeAttr('title');
+                    // Just log it - the form will show an error if needed
+                    console.log('No catatan available for tangkapan');
                 }
             }).fail(function() {
-                // If API fails, assume no catatan
-                $('#tangkapan-tab').addClass('disabled');
-                $('#btnAddTangkapan').prop('disabled', true);
+                console.log('Failed to load catatan');
             });
         }
 
@@ -1221,13 +1219,32 @@
             }).fail(handleAjaxError);
         }
 
+        function loadPerjalananOptions() {
+            // This function is for loading perjalanan in perjalanan tab
+            // Not needed in this context
+        }
+
+        function loadPerjalananOptionsForSpot() {
+            $.get(perjalananApi, function(res) {
+                if (!res.success) return;
+                const select = $('#id_perjalanan_spot').empty();
+                select.append('<option value="">Pilih perjalanan atau kosongkan...</option>');
+                res.data.forEach(function(p) {
+                    select.append('<option value="'+p.id_perjalanan+'">Perjalanan #'+p.id_perjalanan+' - '+p.waktu_mulai+' ('+p.jarak_lokasi+' km)</option>');
+                });
+            }).fail(handleAjaxError);
+        }
+
         function loadCatatanOptions() {
             $.get(catatanApi, function(res) {
                 if (!res.success) return;
                 const select = $('#id_catatan_tangkapan').empty();
                 select.append('<option value="">Pilih catatan...</option>');
                 res.data.forEach(function(c) {
-                    select.append('<option value="'+c.id_catatan+'">Catatan #'+c.id_catatan+' - '+c.catatan.substring(0, 30)+'</option>');
+                    const catatan_text = c.catatan && c.catatan.length > 30 
+                        ? c.catatan.substring(0, 30) + '...' 
+                        : c.catatan || 'Catatan #' + c.id_catatan;
+                    select.append('<option value="'+c.id_catatan+'">Catatan #'+c.id_catatan+' - '+catatan_text+'</option>');
                 });
             }).fail(handleAjaxError);
         }
@@ -1391,7 +1408,29 @@
                 window.location.href = 'login.html';
                 return;
             }
-            alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message || xhr.statusText));
+            
+            let errorMsg = 'Terjadi kesalahan: ';
+            
+            // Try to parse JSON response
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMsg += response.message || xhr.statusText;
+            } catch (e) {
+                // If not JSON, show status text and response text
+                errorMsg += xhr.statusText;
+                if (xhr.responseText) {
+                    errorMsg += ' - ' + xhr.responseText.substring(0, 100);
+                }
+            }
+            
+            console.error('AJAX Error:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                message: errorMsg
+            });
+            
+            alert(errorMsg);
         }
     </script>
 </body>

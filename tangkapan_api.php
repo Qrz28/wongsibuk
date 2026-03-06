@@ -1,22 +1,19 @@
-
-
 <?php
+
 /**
  * CRUD API untuk tabel `tangkapan` (relasi ke catatan_memancing)
  */
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+
+require_once 'config.php';
+setCorsHeaders();
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-require_once 'config.php';
-session_start();
 
 if (!isset($_SESSION['id_pengguna'])) {
     http_response_code(401);
