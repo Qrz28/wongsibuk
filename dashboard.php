@@ -371,10 +371,7 @@ $user_email = $_SESSION['email'];
                         <a class="nav-link" href="perjalanan.html">Perjalanan</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="tangkapan.html">Tangkapan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="spot_memancing.html">Spot Memancing</a>
+                        <a class="nav-link" href="catatan_memancing.html">Catatan & Data</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="laporan.html">Laporan</a>
@@ -417,18 +414,11 @@ $user_email = $_SESSION['email'];
                 <span class="btn-feature">Kelola Perjalanan</span>
             </a>
 
-            <a href="tangkapan.html" class="feature-card">
-                <div class="card-icon">🐟</div>
-                <h3 class="card-title">Tangkapan</h3>
-                <p class="card-description">Catat hasil tangkapan Anda</p>
-                <span class="btn-feature">Kelola Tangkapan</span>
-            </a>
-
-            <a href="spot_memancing.html" class="feature-card">
-                <div class="card-icon">📍</div>
-                <h3 class="card-title">Spot Memancing</h3>
-                <p class="card-description">Temukan spot terbaik</p>
-                <span class="btn-feature">Jelajahi Spot</span>
+            <a href="catatan_memancing.html" class="feature-card">
+                <div class="card-icon">📝</div>
+                <h3 class="card-title">Catatan & Data</h3>
+                <p class="card-description">Kelola catatan, tangkapan, dan spot memancing</p>
+                <span class="btn-feature">Kelola Data</span>
             </a>
 
             <a href="laporan.html" class="feature-card">

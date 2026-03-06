@@ -326,6 +326,62 @@
                 margin-bottom: 20px;
             }
         }
+
+        .photo-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .report-photo-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .report-photo-thumb:hover {
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .photo-modal .modal-dialog {
+            max-width: 800px;
+        }
+
+        .photo-modal img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-section .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin: 0;
+        }
+
+        .filter-section .form-select {
+            min-width: 200px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        .filter-section .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        }
     </style>
 </head>
 <body>
@@ -345,10 +401,7 @@
                         <a class="nav-link" href="perjalanan.html">Perjalanan</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="tangkapan.html">Tangkapan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="spot_memancing.html">Spot Memancing</a>
+                        <a class="nav-link" href="catatan_memancing.html">Catatan & Data</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="laporan.html">Laporan</a>
@@ -378,9 +431,17 @@
                 <i class="fas fa-chart-bar"></i>
                 Dashboard Laporan
             </h2>
-            <button id="btnExport" class="btn btn-export">
-                <i class="fas fa-download me-2"></i>Export PDF
-            </button>
+            <div class="d-flex gap-3 align-items-center">
+                <div class="filter-section">
+                    <label for="tripFilter" class="form-label mb-1">Pilih Perjalanan:</label>
+                    <select id="tripFilter" class="form-select form-select-sm">
+                        <option value="">Semua Perjalanan</option>
+                    </select>
+                </div>
+                <button id="btnExport" class="btn btn-export">
+                    <i class="fas fa-download me-2"></i>Export PDF
+                </button>
+            </div>
         </div>
 
         <!-- Statistics Cards -->
@@ -431,6 +492,7 @@
                             <th>Nama Ikan</th>
                             <th>Jumlah</th>
                             <th>Tanggal Jawa</th>
+                            <th>Foto</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -495,7 +557,13 @@
         const spotsApi = 'spot_api.php';
 
         $(document).ready(function() {
+            loadTrips();
             loadReport();
+            
+            // Trip filter change
+            $('#tripFilter').on('change', function() {
+                loadReport();
+            });
             
             // Export PDF
             $('#btnExport').on('click', function() {
@@ -503,8 +571,25 @@
             });
         });
 
+        function loadTrips() {
+            $.get(tripsApi, function(res) {
+                if (!res.success) return;
+                const select = $('#tripFilter').empty();
+                select.append('<option value="">Semua Perjalanan</option>');
+                res.data.forEach(function(trip) {
+                    const optionText = `Perjalanan #${trip.id_perjalanan} - ${trip.waktu_mulai} (${trip.jarak_lokasi} km)`;
+                    select.append(`<option value="${trip.id_perjalanan}">${optionText}</option>`);
+                });
+            }).fail(function() {
+                console.log('Failed to load trips');
+            });
+        }
+
         function loadReport() {
-            $.get(api, function(res) {
+            const tripId = $('#tripFilter').val();
+            const url = tripId ? `${api}?id_perjalanan=${tripId}` : api;
+            
+            $.get(url, function(res) {
                 if (!res.success) {
                     showAlert('Gagal memuat laporan', 'danger');
                     return;
@@ -605,6 +690,22 @@
             $('#noDataCatches').hide();
 
             catches.forEach(function(catch_data) {
+                // Load photos for this catch
+                const fotoCell = $('<td>');
+                $.get('foto_api.php?id_tangkapan=' + catch_data.id_tangkapan, function(fotoRes) {
+                    if (fotoRes.success && fotoRes.data.length > 0) {
+                        const photos = fotoRes.data;
+                        const photoHtml = photos.map(function(foto) {
+                            return `<img src="uploads/${foto.nama_file}" alt="${foto.deskripsi || 'Foto tangkapan'}" class="report-photo-thumb" onclick="showPhotoModal('${foto.nama_file}', '${foto.deskripsi || 'Foto tangkapan'}')">`;
+                        }).join('');
+                        fotoCell.html(`<div class="photo-gallery">${photoHtml}</div>`);
+                    } else {
+                        fotoCell.html('<span class="text-muted">Tidak ada foto</span>');
+                    }
+                }).fail(function() {
+                    fotoCell.html('<span class="text-muted">Error</span>');
+                });
+
                 const tr = `<tr>
                     <td><strong>#${catch_data.id_tangkapan}</strong></td>
                     <td>#${catch_data.id_perjalanan}</td>
@@ -613,7 +714,9 @@
                     <td><span class="badge bg-info">${catch_data.jumlah_ikan}</span></td>
                     <td>${catch_data.tanggal_jawa || '-'}</td>
                 </tr>`;
-                tbody.append(tr);
+                const $tr = $(tr);
+                $tr.append(fotoCell);
+                tbody.append($tr);
             });
         }
 
@@ -708,11 +811,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>`;
             
-            $('.container-main').prepend(alertHtml);
+            $('.main-container').prepend(alertHtml);
             
             setTimeout(() => {
                 $('.alert').fadeOut(() => $('.alert').remove());
             }, 3000);
+        }
+
+        function showPhotoModal(filename, description) {
+            // Create modal if it doesn't exist
+            if (!$('#photoModal').length) {
+                const modalHtml = `
+                    <div class="modal fade photo-modal" id="photoModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">${description}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img id="modalPhoto" src="" alt="" class="img-fluid">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(modalHtml);
+            }
+            
+            $('#modalPhoto').attr('src', 'uploads/' + filename).attr('alt', description);
+            $('#photoModal .modal-title').text(description);
+            new bootstrap.Modal(document.getElementById('photoModal')).show();
         }
     </script>
 </body>

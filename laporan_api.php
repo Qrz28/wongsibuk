@@ -28,14 +28,22 @@ if (!isset($_SESSION['id_pengguna'])) {
 
 $user_id = $_SESSION['id_pengguna'];
 
+// Check if filtering by specific trip
+$trip_filter = isset($_GET['id_perjalanan']) ? (int)$_GET['id_perjalanan'] : null;
+
 try {
-    // Get all trips for this user
+    // Get trips for this user (filtered if specified)
     $tripsQuery = "SELECT id_perjalanan, waktu_mulai, waktu_selesai, jarak_lokasi 
                    FROM perjalanan 
                    WHERE id_pengguna = ? 
+                   " . ($trip_filter ? "AND id_perjalanan = ?" : "") . "
                    ORDER BY waktu_mulai DESC";
     $tripsStmt = $conn->prepare($tripsQuery);
-    $tripsStmt->bind_param('i', $user_id);
+    if ($trip_filter) {
+        $tripsStmt->bind_param('ii', $user_id, $trip_filter);
+    } else {
+        $tripsStmt->bind_param('i', $user_id);
+    }
     $tripsStmt->execute();
     $tripsResult = $tripsStmt->get_result();
     $trips = [];
@@ -65,15 +73,20 @@ try {
     }
     $tripsStmt->close();
 
-    // Get all catches for this user (via catatan_memancing -> perjalanan)
+    // Get catches for this user (filtered by trip if specified)
     $catchesQuery = "SELECT t.id_tangkapan, t.id_catatan, t.jenis_ikan, t.nama_ikan, t.jumlah_ikan, t.tanggal_jawa
                      FROM tangkapan t
                      JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
                      JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
                      WHERE p.id_pengguna = ?
+                     " . ($trip_filter ? "AND p.id_perjalanan = ?" : "") . "
                      ORDER BY t.id_tangkapan DESC";
     $catchesStmt = $conn->prepare($catchesQuery);
-    $catchesStmt->bind_param('i', $user_id);
+    if ($trip_filter) {
+        $catchesStmt->bind_param('ii', $user_id, $trip_filter);
+    } else {
+        $catchesStmt->bind_param('i', $user_id);
+    }
     $catchesStmt->execute();
     $catchesResult = $catchesStmt->get_result();
     $catches = [];
@@ -83,11 +96,25 @@ try {
     }
     $catchesStmt->close();
 
-    // Get all spots (public data, not user-specific)
-    $spotsQuery = "SELECT id_spot, alamat, deskripsi_spot, jenis_spot 
-                   FROM spot_memancing 
-                   ORDER BY id_spot DESC";
-    $spotsStmt = $conn->prepare($spotsQuery);
+    // Get spots (filtered by trip if specified, otherwise all spots used by user)
+    if ($trip_filter) {
+        $spotsQuery = "SELECT DISTINCT s.id_spot, s.alamat, s.deskripsi_spot, s.jenis_spot 
+                       FROM spot_memancing s
+                       JOIN catatan_memancing c ON s.id_spot = c.id_spot
+                       WHERE c.id_perjalanan = ?
+                       ORDER BY s.id_spot DESC";
+        $spotsStmt = $conn->prepare($spotsQuery);
+        $spotsStmt->bind_param('i', $trip_filter);
+    } else {
+        $spotsQuery = "SELECT DISTINCT s.id_spot, s.alamat, s.deskripsi_spot, s.jenis_spot 
+                       FROM spot_memancing s
+                       JOIN catatan_memancing c ON s.id_spot = c.id_spot
+                       JOIN perjalanan p ON c.id_perjalanan = p.id_perjalanan
+                       WHERE p.id_pengguna = ?
+                       ORDER BY s.id_spot DESC";
+        $spotsStmt = $conn->prepare($spotsQuery);
+        $spotsStmt->bind_param('i', $user_id);
+    }
     $spotsStmt->execute();
     $spotsResult = $spotsStmt->get_result();
     $spots = [];

@@ -22,12 +22,13 @@ CREATE TABLE IF NOT EXISTS perjalanan (
     FOREIGN KEY (id_pengguna) REFERENCES pengguna(id_pengguna) ON DELETE CASCADE
 );
 
--- Tabel spot_memancing (spots)
+-- Tabel spot_memancing (spots) - updated with jarak_lokasi column
 CREATE TABLE IF NOT EXISTS spot_memancing (
     id_spot INT PRIMARY KEY AUTO_INCREMENT,
     alamat VARCHAR(100) NOT NULL,
     deskripsi_spot TEXT NOT NULL,
-    jenis_spot VARCHAR(100) NOT NULL
+    jenis_spot VARCHAR(100) NOT NULL,
+    jarak_lokasi FLOAT DEFAULT 0
 );
 
 -- Tabel catatan_memancing (notes)
@@ -51,11 +52,12 @@ CREATE TABLE IF NOT EXISTS tangkapan (
     FOREIGN KEY (id_catatan) REFERENCES catatan_memancing(id_catatan) ON DELETE CASCADE
 );
 
--- Tabel foto (photos)
+-- Tabel foto (photos) - updated with nama_file column
 CREATE TABLE IF NOT EXISTS foto (
     id_foto INT PRIMARY KEY AUTO_INCREMENT,
     id_tangkapan INT NOT NULL,
     deskripsi TEXT,
+    nama_file VARCHAR(255) NOT NULL,
     tanggal_ambil DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_tangkapan) REFERENCES tangkapan(id_tangkapan) ON DELETE CASCADE
 );

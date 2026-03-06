@@ -33,7 +33,7 @@ try {
         // Get single spot or all spots
         if (isset($_GET['id'])) {
             $id = (int)$_GET['id'];
-            $query = "SELECT id_spot, alamat, deskripsi_spot, jenis_spot FROM spot_memancing WHERE id_spot = ?";
+            $query = "SELECT id_spot, alamat, deskripsi_spot, jenis_spot, jarak_lokasi FROM spot_memancing WHERE id_spot = ?";
             $stmt = $conn->prepare($query);
             $stmt->bind_param('i', $id);
             $stmt->execute();
@@ -45,7 +45,7 @@ try {
         }
 
         // Get all spots
-        $query = "SELECT id_spot, alamat, deskripsi_spot, jenis_spot FROM spot_memancing ORDER BY id_spot DESC";
+        $query = "SELECT id_spot, alamat, deskripsi_spot, jenis_spot, jarak_lokasi FROM spot_memancing ORDER BY id_spot DESC";
         $stmt = $conn->prepare($query);
         $stmt->execute();
         $res = $stmt->get_result();
@@ -63,6 +63,7 @@ try {
         $alamat = trim($input['alamat'] ?? '');
         $deskripsi_spot = trim($input['deskripsi_spot'] ?? '');
         $jenis_spot = trim($input['jenis_spot'] ?? '');
+        $jarak_lokasi = isset($input['jarak_lokasi']) ? (float)$input['jarak_lokasi'] : 0;
 
         // Validation
         if (empty($alamat) || empty($deskripsi_spot) || empty($jenis_spot)) {
@@ -84,7 +85,7 @@ try {
         }
 
         // Insert
-        $query = "INSERT INTO spot_memancing (alamat, deskripsi_spot, jenis_spot) VALUES (?, ?, ?)";
+        $query = "INSERT INTO spot_memancing (alamat, deskripsi_spot, jenis_spot, jarak_lokasi) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
         
         if (!$stmt) {
@@ -93,7 +94,7 @@ try {
             exit();
         }
 
-        $stmt->bind_param('sss', $alamat, $deskripsi_spot, $jenis_spot);
+        $stmt->bind_param('sssd', $alamat, $deskripsi_spot, $jenis_spot, $jarak_lokasi);
         
         if ($stmt->execute()) {
             http_response_code(201);
@@ -116,6 +117,7 @@ try {
         $alamat = trim($input['alamat'] ?? '');
         $deskripsi_spot = trim($input['deskripsi_spot'] ?? '');
         $jenis_spot = trim($input['jenis_spot'] ?? '');
+        $jarak_lokasi = isset($input['jarak_lokasi']) ? (float)$input['jarak_lokasi'] : 0;
 
         // Validation
         if (!$id || empty($alamat) || empty($deskripsi_spot) || empty($jenis_spot)) {
@@ -152,7 +154,7 @@ try {
         $checkStmt->close();
 
         // Update
-        $query = "UPDATE spot_memancing SET alamat = ?, deskripsi_spot = ?, jenis_spot = ? WHERE id_spot = ?";
+        $query = "UPDATE spot_memancing SET alamat = ?, deskripsi_spot = ?, jenis_spot = ?, jarak_lokasi = ? WHERE id_spot = ?";
         $stmt = $conn->prepare($query);
         
         if (!$stmt) {
@@ -161,7 +163,7 @@ try {
             exit();
         }
 
-        $stmt->bind_param('sssi', $alamat, $deskripsi_spot, $jenis_spot, $id);
+        $stmt->bind_param('sssdi', $alamat, $deskripsi_spot, $jenis_spot, $jarak_lokasi, $id);
         
         if ($stmt->execute()) {
             echo json_encode([
