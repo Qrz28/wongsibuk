@@ -1,31 +1,26 @@
 <?php
 /**
- * Database Configuration
- * Fishing Log Application
+ * Local Configuration File
+ * Fishing Log Application - OOP Version
+ * Untuk development di localhost
  */
 
-// Database credentials
+// Database credentials - LOCALHOST
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
-define('DB_NAME', 'fishinglog');
-
-// Create connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-
-// Check connection
-if ($conn->connect_error) {
-    die(json_encode([
-        'success' => false,
-        'message' => 'Koneksi database gagal: ' . $conn->connect_error
-    ]));
-}
-
-// Set charset to UTF-8
-$conn->set_charset("utf8");
+define('DB_NAME', 'wongsibuk');
 
 // Set timezone
 date_default_timezone_set('Asia/Jakarta');
+
+// Autoload classes
+spl_autoload_register(function ($class_name) {
+    $file = __DIR__ . '/../classes/' . $class_name . '.php';
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
 
 /**
  * CORS Configuration
@@ -40,4 +35,3 @@ function setCorsHeaders() {
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type');
 }
-?>

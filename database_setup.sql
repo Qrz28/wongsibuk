@@ -1,8 +1,6 @@
--- Database setup for Fishing Log App
--- Run this script in phpMyAdmin or MySQL command line
-
-CREATE DATABASE IF NOT EXISTS fishinglog;
-USE fishinglog;
+-- Create tables for fishing log application
+-- Database 'iifi_4131257_fishing' already exists
+USE iifi_4131257_fishing;
 
 -- Tabel pengguna (users) with added password column
 CREATE TABLE IF NOT EXISTS pengguna (

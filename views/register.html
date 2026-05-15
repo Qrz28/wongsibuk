@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun - Fishing Log</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page" style="background-image: url('../assets/img/fishing_bg.png');">
+        <div class="auth-card glass animate-fade" style="max-width: 500px;">
+            <div class="text-center mb-4">
+                <div style="font-size: 3rem; color: var(--accent);">⚓</div>
+                <h1 class="auth-title">Fishing Log</h1>
+                <p class="auth-subtitle">Mulai petualangan memancingmu!</p>
+            </div>
+
+            <div id="alertMessage" class="mb-4" style="display: none; padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;"></div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-input" id="nama" name="nama" placeholder="Kapten Nemo" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="email" name="email" placeholder="nemo@ocean.com" required>
+                </div>
+
+                <div class="row" style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="password" name="password" placeholder="••••••••" required minlength="6">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Konfirmasi</label>
+                        <input type="password" class="form-input" id="confirm_password" name="confirm_password" placeholder="••••••••" required minlength="6">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary w-100" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                    <i class="fas fa-user-plus"></i> Daftar Akun
+                </button>
+            </form>
+
+            <div class="mt-4 text-center" style="margin-top: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--text-muted);">
+                Sudah punya akun? <a href="login.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Masuk di sini</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#registerForm').on('submit', function (e) {
+                e.preventDefault();
+                
+                const nama = $('#nama').val().trim();
+                const email = $('#email').val().trim();
+                const password = $('#password').val();
+                const confirm = $('#confirm_password').val();
+
+                if (password !== confirm) {
+                    showAlert('Konfirmasi password tidak cocok!', 'error');
+                    return;
+                }
+
+                const $btn = $(this).find('button');
+                const originalText = $btn.html();
+                
+                $btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i> Mendaftar...');
+                $('#alertMessage').slideUp();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '../api/user_api.php',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        action: 'register',
+                        nama: nama,
+                        email: email,
+                        password: password,
+                        confirm_password: confirm
+                    }),
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert('Pendaftaran berhasil! Mengalihkan...', 'success');
+                            setTimeout(() => window.location.href = response.redirect || 'dashboard.php', 1500);
+                        } else {
+                            showAlert(response.message || 'Pendaftaran gagal!', 'error');
+                            $btn.prop('disabled', false).html(originalText);
+                        }
+                    },
+                    error: function (xhr) {
+                        showAlert('Terjadi kesalahan server.', 'error');
+                        $btn.prop('disabled', false).html(originalText);
+                    }
+                });
+            });
+
+            function showAlert(msg, type) {
+                const bg = type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+                const color = type === 'success' ? 'var(--success)' : 'var(--danger)';
+                const border = type === 'success' ? '1px solid var(--success)' : '1px solid var(--danger)';
+                
+                $('#alertMessage').html(msg).css({
+                    'display': 'block',
+                    'background': bg,
+                    'color': color,
+                    'border': border
+                });
+            }
+        });
+    </script>
+</body>
+</html>

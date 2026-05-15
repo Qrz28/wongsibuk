@@ -4,10 +4,22 @@
  * Fishing Log Application
  */
 
-header('Content-Type: application/json; charset=utf-8');
+// Start session FIRST before any headers
+session_start();
 
 // Include config to get CORS function
+if (!file_exists('config.php')) {
+    http_response_code(500);
+    die(json_encode([
+        'success' => false,
+        'message' => 'File config.php tidak ditemukan',
+        'debug' => 'Current dir: ' . __DIR__
+    ]));
+}
+
 require_once 'config.php';
+
+header('Content-Type: application/json; charset=utf-8');
 setCorsHeaders();
 
 // Handle CORS preflight
@@ -22,6 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
         'success' => false,
         'message' => 'Method tidak diizinkan'
+    ]);
+    exit();
+}
+
+// Check if database is connected
+if (!$conn || $conn->connect_error) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database connection error: ' . ($conn->connect_error ?? 'Unknown'),
+        'debug' => true
     ]);
     exit();
 }
@@ -81,7 +104,11 @@ if (!$stmt) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Error prepare statement: ' . $conn->error
+        'message' => 'Database error: ' . $conn->error,
+        'debug' => [
+            'error' => $conn->error,
+            'errno' => $conn->errno
+        ]
     ]);
     exit();
 }
@@ -110,9 +137,6 @@ if (!password_verify($password, $user['password'])) {
     ]);
     exit();
 }
-
-// Start session
-session_start();
 
 // Set session variables
 $_SESSION['id_pengguna'] = $user['id_pengguna'];

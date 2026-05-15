@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +16,7 @@
 
         .hero-section {
             background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%),
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="fish" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M15 10 Q20 5 25 10 Q20 15 15 10 Z" fill="rgba(255,255,255,0.05)"/><circle cx="12" cy="8" r="1" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23fish)"/></svg>');
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="fish" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M15 10 Q20 5 25 10 Q20 15 15 10 Z" fill="rgba(255,255,255,0.05)"/><circle cx="12" cy="8" r="1" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="100" height="100" fill="url(%23fish)"/></svg>');
             padding: 60px 0;
             margin-bottom: 40px;
             border-radius: 0 0 50px 50px;
@@ -340,6 +341,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -378,7 +380,8 @@
         <div class="container">
             <div class="hero-content">
                 <h1 class="hero-title"><i class="fas fa-fish"></i> Tangkapan Ikan</h1>
-                <p class="hero-subtitle">Catat dan kelola semua hasil tangkapan ikan dari setiap perjalanan memancing</p>
+                <p class="hero-subtitle">Catat dan kelola semua hasil tangkapan ikan dari setiap perjalanan memancing
+                </p>
             </div>
         </div>
     </div>
@@ -450,7 +453,8 @@
 
                         <div class="mb-3">
                             <label class="form-label">Tanggal Jawa</label>
-                            <input type="text" id="tanggal_jawa" class="form-control" placeholder="contoh: 12 Suro 1950">
+                            <input type="text" id="tanggal_jawa" class="form-control"
+                                placeholder="contoh: 12 Suro 1950">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -473,18 +477,20 @@
                 <form id="photoForm" enctype="multipart/form-data">
                     <div class="modal-body">
                         <input type="hidden" id="id_tangkapan_foto">
-                        
+
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label class="form-label">Pilih Foto</label>
-                                    <input type="file" id="foto" name="foto" class="form-control" accept="image/*" required>
+                                    <input type="file" id="foto" name="foto" class="form-control" accept="image/*"
+                                        required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Deskripsi (opsional)</label>
-                                    <input type="text" id="deskripsi_foto" class="form-control" placeholder="Deskripsi foto...">
+                                    <input type="text" id="deskripsi_foto" class="form-control"
+                                        placeholder="Deskripsi foto...">
                                 </div>
                             </div>
                         </div>
@@ -503,23 +509,23 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const api = 'tangkapan_api.php';
-        const catatanApi = 'catatan_api.php';
-        const fotoApi = 'foto_api.php';
+        const api = '../api/tangkapan_api.php';
+        const catatanApi = '../api/catatan_api.php';
+        const fotoApi = '../api/foto_api.php';
         const catchModal = new bootstrap.Modal(document.getElementById('catchModal'));
         const photoModal = new bootstrap.Modal(document.getElementById('photoModal'));
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             loadCatches();
             loadCatatanOptions();
 
-            $('#btnAdd').on('click', function() {
+            $('#btnAdd').on('click', function () {
                 $('#catchForm')[0].reset();
                 $('#id_tangkapan').val('');
                 catchModal.show();
             });
 
-            $('#catchForm').on('submit', function(e) {
+            $('#catchForm').on('submit', function (e) {
                 e.preventDefault();
                 const id = $('#id_tangkapan').val();
                 const data = {
@@ -537,7 +543,7 @@
                         method: 'PUT',
                         contentType: 'application/json',
                         data: JSON.stringify(data),
-                        success: function(res) {
+                        success: function (res) {
                             if (res.success) {
                                 catchModal.hide();
                                 loadCatches();
@@ -554,7 +560,7 @@
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify(data),
-                        success: function(res) {
+                        success: function (res) {
                             if (res.success) {
                                 catchModal.hide();
                                 loadCatches();
@@ -568,9 +574,9 @@
                 }
             });
 
-            $('#catchesTable').on('click', '.btn-edit', function() {
+            $('#catchesTable').on('click', '.btn-edit', function () {
                 const id = $(this).data('id');
-                $.get(api + '?id=' + id, function(res) {
+                $.get(api + '?id=' + id, function (res) {
                     if (res.success && res.data) {
                         $('#id_tangkapan').val(res.data.id_tangkapan);
                         $('#id_catatan').val(res.data.id_catatan);
@@ -583,7 +589,7 @@
                 }).fail(handleAjaxError);
             });
 
-            $('#catchesTable').on('click', '.btn-delete', function() {
+            $('#catchesTable').on('click', '.btn-delete', function () {
                 const id = $(this).data('id');
                 if (!confirm('Hapus tangkapan ID ' + id + '?')) return;
                 $.ajax({
@@ -591,22 +597,22 @@
                     method: 'DELETE',
                     contentType: 'application/json',
                     data: JSON.stringify({ id_tangkapan: id }),
-                    success: function(res) { 
-                        loadCatches(); 
+                    success: function (res) {
+                        loadCatches();
                         showAlert('Tangkapan dihapus!', 'success');
                     },
                     error: handleAjaxError
                 });
             });
 
-            $('#catchesTable').on('click', '.btn-photo', function() {
+            $('#catchesTable').on('click', '.btn-photo', function () {
                 const id = $(this).data('id');
                 $('#id_tangkapan_foto').val(id);
                 loadPhotos(id);
                 photoModal.show();
             });
 
-            $('#photoForm').on('submit', function(e) {
+            $('#photoForm').on('submit', function (e) {
                 e.preventDefault();
                 const id_tangkapan = $('#id_tangkapan_foto').val();
                 const formData = new FormData();
@@ -620,7 +626,7 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    success: function(res) {
+                    success: function (res) {
                         if (res.success) {
                             $('#photoForm')[0].reset();
                             loadPhotos(id_tangkapan);
@@ -636,14 +642,14 @@
         });
 
         function loadPhotos(id_tangkapan) {
-            $.get(fotoApi + '?id_tangkapan=' + id_tangkapan, function(res) {
+            $.get(fotoApi + '?id_tangkapan=' + id_tangkapan, function (res) {
                 if (!res.success) return;
                 const container = $('#photoList').empty();
                 if (res.data.length === 0) {
                     container.html('<p class="text-muted">Belum ada foto. Silakan upload foto di atas.</p>');
                     return;
                 }
-                res.data.forEach(function(foto) {
+                res.data.forEach(function (foto) {
                     const div = $('<div class="card mb-2">');
                     div.html(`
                         <div class="card-body d-flex justify-content-between align-items-center">
@@ -662,7 +668,7 @@
                     container.append(div);
                 });
 
-                $('.btn-delete-photo').on('click', function() {
+                $('.btn-delete-photo').on('click', function () {
                     const fotoId = $(this).data('id');
                     const tangkapanId = $(this).data('tangkapan');
                     if (!confirm('Hapus foto ini?')) return;
@@ -671,7 +677,7 @@
                         method: 'DELETE',
                         contentType: 'application/json',
                         data: JSON.stringify({ id_foto: fotoId }),
-                        success: function(res) {
+                        success: function (res) {
                             loadPhotos(tangkapanId);
                             loadCatches();
                             showAlert('Foto dihapus!', 'success');
@@ -683,21 +689,21 @@
         }
 
         function loadCatatanOptions() {
-            $.get(catatanApi, function(res) {
+            $.get(catatanApi, function (res) {
                 if (!res.success) return;
                 const select = $('#id_catatan').empty();
                 select.append('<option value="">Pilih catatan...</option>');
-                res.data.forEach(function(c) {
-                    select.append('<option value="'+c.id_catatan+'">'+c.id_catatan+' — '+(c.catatan ? c.catatan.substring(0, 30) + '...' : 'Catatan #'+c.id_catatan)+' ('+c.waktu_mulai+')</option>');
+                res.data.forEach(function (c) {
+                    select.append('<option value="' + c.id_catatan + '">' + c.id_catatan + ' — ' + (c.catatan ? c.catatan.substring(0, 30) + '...' : 'Catatan #' + c.id_catatan) + ' (' + c.waktu_mulai + ')</option>');
                 });
             }).fail(handleAjaxError);
         }
 
         function loadCatches() {
-            $.get(api, function(res) {
+            $.get(api, function (res) {
                 if (!res.success) return;
                 const tbody = $('#catchesTable tbody').empty();
-                res.data.forEach(function(row) {
+                res.data.forEach(function (row) {
                     const tr = $('<tr>');
                     tr.append($('<td>').text(row.id_tangkapan));
                     tr.append($('<td>').text(row.id_catatan));
@@ -705,22 +711,22 @@
                     tr.append($('<td>').text(row.nama_ikan));
                     tr.append($('<td>').text(row.jumlah_ikan));
                     tr.append($('<td>').text(row.tanggal_jawa || '-'));
-                    
+
                     // Foto column with count badge
                     const fotoTd = $('<td>');
-                    $.get(fotoApi + '?id_tangkapan=' + row.id_tangkapan, function(fotoRes) {
+                    $.get(fotoApi + '?id_tangkapan=' + row.id_tangkapan, function (fotoRes) {
                         const count = fotoRes.success ? fotoRes.data.length : 0;
                         const btnClass = count > 0 ? 'btn-photo' : 'btn-outline-secondary btn-photo';
                         const btnText = count > 0 ? '<i class="fas fa-camera"></i> ' + count : '<i class="fas fa-camera"></i> Add';
                         fotoTd.html('<button class="btn btn-sm ' + btnClass + '" data-id="' + row.id_tangkapan + '">' + btnText + '</button>');
-                    }).fail(function() {
+                    }).fail(function () {
                         fotoTd.html('<button class="btn btn-sm btn-outline-secondary btn-photo" data-id="' + row.id_tangkapan + '"><i class="fas fa-camera"></i> Add</button>');
                     });
                     tr.append(fotoTd);
-                    
+
                     const actions = $('<td>');
-                    actions.append('<button class="btn btn-sm btn-outline-primary me-1 btn-edit" data-id="'+row.id_tangkapan+'"><i class="fas fa-edit"></i></button>');
-                    actions.append('<button class="btn btn-sm btn-outline-danger btn-delete" data-id="'+row.id_tangkapan+'"><i class="fas fa-trash"></i></button>');
+                    actions.append('<button class="btn btn-sm btn-outline-primary me-1 btn-edit" data-id="' + row.id_tangkapan + '"><i class="fas fa-edit"></i></button>');
+                    actions.append('<button class="btn btn-sm btn-outline-danger btn-delete" data-id="' + row.id_tangkapan + '"><i class="fas fa-trash"></i></button>');
                     tr.append(actions);
                     tbody.append(tr);
                 });
@@ -750,5 +756,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>

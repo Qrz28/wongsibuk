@@ -2,35 +2,34 @@
 /**
  * Laporan API Endpoint
  * Aggregates data dari perjalanan, tangkapan, dan spot memancing
- * Fishing Log Application
+ * Fishing Log Application - OOP Version
  */
 
-header('Content-Type: application/json; charset=utf-8');
-
-require_once 'config.php';
-setCorsHeaders();
 session_start();
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/Database.php';
 
-// Handle CORS preflight
+header('Content-Type: application/json; charset=utf-8');
+setCorsHeaders();
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Check if user is logged in
 if (!isset($_SESSION['id_pengguna'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
-$user_id = $_SESSION['id_pengguna'];
-
-// Check if filtering by specific trip
-$trip_filter = isset($_GET['id_perjalanan']) ? (int)$_GET['id_perjalanan'] : null;
-
 try {
-    // Get trips for this user (filtered if specified)
+    $db = new Database();
+    $conn = $db->getConnection();
+    $user_id = $_SESSION['id_pengguna'];
+    $trip_filter = isset($_GET['id_perjalanan']) ? (int)$_GET['id_perjalanan'] : null;
+
+    // Get trips for this user
     $tripsQuery = "SELECT id_perjalanan, waktu_mulai, waktu_selesai, jarak_lokasi 
                    FROM perjalanan 
                    WHERE id_pengguna = ? 
@@ -71,7 +70,7 @@ try {
     }
     $tripsStmt->close();
 
-    // Get catches for this user (filtered by trip if specified)
+    // Get catches for this user
     $catchesQuery = "SELECT t.id_tangkapan, t.id_catatan, t.jenis_ikan, t.nama_ikan, t.jumlah_ikan, t.tanggal_jawa
                      FROM tangkapan t
                      JOIN catatan_memancing c ON t.id_catatan = c.id_catatan
@@ -94,7 +93,7 @@ try {
     }
     $catchesStmt->close();
 
-    // Get spots (filtered by trip if specified, otherwise all spots used by user)
+    // Get spots
     if ($trip_filter) {
         $spotsQuery = "SELECT DISTINCT s.id_spot, s.alamat, s.deskripsi_spot, s.jenis_spot 
                        FROM spot_memancing s
@@ -130,12 +129,10 @@ try {
         'total_spots' => count($spots)
     ];
 
-    // Sum total distance
     foreach ($trips as $trip) {
         $stats['total_distance'] += floatval($trip['jarak_lokasi']);
     }
 
-    // Response
     echo json_encode([
         'success' => true,
         'data' => [
@@ -153,6 +150,3 @@ try {
         'message' => 'Error: ' . $e->getMessage()
     ]);
 }
-
-$conn->close();
-?>
