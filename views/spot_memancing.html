@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Spot Memancing - Fishing Log</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
@@ -351,6 +353,142 @@
                 padding: 20px;
             }
         }
+
+        /* ====== TAB NAVIGATION ====== */
+        .tab-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #f0f2f5;
+            padding: 0.4rem;
+            border-radius: 14px;
+            width: fit-content;
+        }
+        .tab-btn {
+            padding: 0.65rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.35);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(102,126,234,0.1);
+            color: #667eea;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ====== MAP STYLES ====== */
+        #mapContainer {
+            height: 520px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #e0e5f0;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+        .map-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .map-legend {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #555;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .map-status {
+            font-size: 0.85rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .map-status.loading { color: #667eea; }
+        .map-status.done { color: #2ecc71; }
+        /* Leaflet popup custom */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2) !important;
+            border: none !important;
+        }
+        .spot-popup-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+            color: #1a1a2e;
+        }
+        .spot-popup-type {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: white;
+        }
+        .spot-popup-desc {
+            font-size: 0.82rem;
+            color: #555;
+            line-height: 1.4;
+            margin-top: 0.35rem;
+        }
+        .spot-popup-dist {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+        .btn-lihat-peta {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 2px;
+        }
+        .btn-lihat-peta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        .geocode-spinner {
+            display: none;
+            color: #667eea;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 
@@ -409,6 +547,19 @@
             </button>
         </div>
 
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" id="tabList" onclick="switchTab('list')">
+                <i class="fas fa-list"></i> Daftar Spot
+            </button>
+            <button class="tab-btn" id="tabMap" onclick="switchTab('map')">
+                <i class="fas fa-map-marked-alt"></i> Peta Interaktif
+            </button>
+        </div>
+
+        <!-- Tab: Daftar -->
+        <div class="tab-panel active" id="panelList">
+
         <!-- Table -->
         <div class="table-container">
             <div class="table-responsive">
@@ -430,6 +581,30 @@
                 <p>📭 Belum ada data spot memancing</p>
             </div>
         </div>
+        </div><!-- /panelList -->
+
+        <!-- Tab: Peta -->
+        <div class="tab-panel" id="panelMap">
+            <div class="map-toolbar">
+                <div class="map-legend" id="mapLegend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#28a745;"></div> Sungai</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#007bff;"></div> Danau</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#2196F3;"></div> Laut</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#fd7e14;"></div> Waduk</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#ffc107;"></div> Kolam</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#6c757d;"></div> Rawa</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#e83e8c;"></div> Lainnya</div>
+                </div>
+                <div class="map-status" id="mapStatus">
+                    <i class="fas fa-circle-info"></i> Klik tab peta untuk muat lokasi
+                </div>
+            </div>
+            <div id="mapContainer"></div>
+            <div class="geocode-spinner" id="geocodeSpinner">
+                <i class="fas fa-spinner fa-spin"></i> Sedang mencari koordinat spot...
+            </div>
+        </div><!-- /panelMap -->
+
     </div>
 
     <!-- Modal -->
@@ -502,14 +677,163 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         const api = '../api/spot_api.php';
         const tripApi = '../api/perjalanan_api.php';
         const spotModal = new bootstrap.Modal(document.getElementById('spotModal'));
+
+        // ===== TAB SWITCHING =====
+        let mapInitialized = false;
+        let leafletMap = null;
+        let markersLayer = null;
+        let allSpotsData = [];
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            if (tab === 'list') {
+                document.getElementById('tabList').classList.add('active');
+                document.getElementById('panelList').classList.add('active');
+            } else {
+                document.getElementById('tabMap').classList.add('active');
+                document.getElementById('panelMap').classList.add('active');
+                initMap();
+            }
+        }
+
+        // ===== LEAFLET MAP =====
+        const SPOT_COLORS = {
+            'Sungai': '#28a745', 'Danau': '#007bff', 'Laut': '#2196F3',
+            'Waduk': '#fd7e14', 'Kolam': '#ffc107', 'Rawa': '#6c757d', 'Lainnya': '#e83e8c'
+        };
+
+        function getSpotIcon(jenis) {
+            const color = SPOT_COLORS[jenis] || '#667eea';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+                <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 26 16 26S32 26 32 16C32 7.163 24.837 0 16 0z" fill="${color}" stroke="white" stroke-width="2"/>
+                <circle cx="16" cy="16" r="7" fill="white" opacity="0.9"/>
+            </svg>`;
+            return L.divIcon({
+                html: `<div style="position:relative;">${svg}</div>`,
+                className: '',
+                iconSize: [32, 42],
+                iconAnchor: [16, 42],
+                popupAnchor: [0, -44]
+            });
+        }
+
+        async function geocodeAddress(address) {
+            // Try Nominatim OpenStreetMap geocoding
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Indonesia')}&limit=1`;
+            try {
+                const resp = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+                const data = await resp.json();
+                if (data && data.length > 0) {
+                    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                }
+            } catch(e) { /* ignore */ }
+            return null;
+        }
+
+        async function initMap() {
+            if (mapInitialized) return;
+            mapInitialized = true;
+
+            // Init Leaflet map centered on Indonesia
+            leafletMap = L.map('mapContainer', { zoomControl: true }).setView([-2.5, 117.0], 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(leafletMap);
+
+            markersLayer = L.featureGroup().addTo(leafletMap);
+
+            // Load spots and geocode
+            const status = document.getElementById('mapStatus');
+            const spinner = document.getElementById('geocodeSpinner');
+
+            if (allSpotsData.length === 0) {
+                status.className = 'map-status loading';
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat data spot...';
+                $.get(api, function(res) {
+                    if (res.success) {
+                        allSpotsData = res.data;
+                        plotSpots(allSpotsData, status, spinner);
+                    }
+                });
+            } else {
+                plotSpots(allSpotsData, status, spinner);
+            }
+        }
+
+        async function plotSpots(spots, status, spinner) {
+            if (spots.length === 0) {
+                status.className = 'map-status';
+                status.innerHTML = '<i class="fas fa-info-circle"></i> Belum ada spot untuk ditampilkan';
+                return;
+            }
+            spinner.style.display = 'block';
+            status.className = 'map-status loading';
+            let geocoded = 0;
+            const bounds = [];
+
+            for (const spot of spots) {
+                status.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Mencari lokasi ${geocoded+1}/${spots.length}: ${spot.alamat}`;
+                const coords = await geocodeAddress(spot.alamat);
+                if (coords) {
+                    geocoded++;
+                    bounds.push([coords.lat, coords.lng]);
+                    const color = SPOT_COLORS[spot.jenis_spot] || '#667eea';
+                    const icon = getSpotIcon(spot.jenis_spot);
+                    const desc = spot.deskripsi_spot && spot.deskripsi_spot.length > 100
+                        ? spot.deskripsi_spot.substring(0,100) + '...'
+                        : spot.deskripsi_spot;
+                    const popup = `
+                        <div style="min-width:200px;">
+                            <div class="spot-popup-title">📍 ${spot.alamat}</div>
+                            <span class="spot-popup-type" style="background:${color}">${spot.jenis_spot}</span>
+                            ${spot.jarak_lokasi ? `<div class="spot-popup-dist">🛣️ Jarak: ${spot.jarak_lokasi} km</div>` : ''}
+                            <div class="spot-popup-desc">${desc || ''}</div>
+                        </div>
+                    `;
+                    L.marker([coords.lat, coords.lng], { icon }).addTo(markersLayer).bindPopup(popup);
+                }
+                // Rate limit Nominatim (1 req/sec)
+                await new Promise(r => setTimeout(r, 1100));
+            }
+
+            spinner.style.display = 'none';
+            if (bounds.length > 0) {
+                leafletMap.fitBounds(bounds, { padding: [40, 40] });
+                status.className = 'map-status done';
+                status.innerHTML = `<i class="fas fa-check-circle"></i> ${geocoded} dari ${spots.length} spot berhasil dipetakan`;
+            } else {
+                status.className = 'map-status';
+                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lokasi tidak ditemukan — coba nama lebih spesifik';
+            }
+        }
+
+        function zoomToSpot(alamat) {
+            switchTab('map');
+            // Wait for map to init, then find marker
+            setTimeout(() => {
+                markersLayer.eachLayer(layer => {
+                    if (layer.getPopup && layer.getPopup()) {
+                        const content = layer.getPopup().getContent();
+                        if (content.includes(alamat)) {
+                            leafletMap.setView(layer.getLatLng(), 14);
+                            layer.openPopup();
+                        }
+                    }
+                });
+            }, 500);
+        }
 
         $(document).ready(function () {
             // Load trips for dropdown
@@ -658,10 +982,13 @@
 
                     const jarakKm = spot.jarak_lokasi ? spot.jarak_lokasi + ' km' : '-';
 
+                    const spotColor = { 'Sungai':'#28a745','Danau':'#007bff','Laut':'#2196F3','Waduk':'#fd7e14','Kolam':'#ffc107','Rawa':'#6c757d','Lainnya':'#e83e8c' }[spot.jenis_spot] || '#667eea';
+                    // Store for map
+                    if (!allSpotsData.find(s => s.id_spot === spot.id_spot)) allSpotsData.push(spot);
                     const tr = `<tr>
                         <td><strong>#${spot.id_spot}</strong></td>
                         <td>${htmlEscape(spot.alamat)}</td>
-                        <td><span class="badge bg-info">${htmlEscape(spot.jenis_spot)}</span></td>
+                        <td><span class="badge" style="background:${spotColor}; color:white; font-weight:600; padding:5px 10px; border-radius:20px;">${htmlEscape(spot.jenis_spot)}</span></td>
                         <td>${jarakKm}</td>
                         <td title="${htmlEscape(spot.deskripsi_spot)}">${htmlEscape(deskripsi)}</td>
                         <td>
@@ -670,6 +997,9 @@
                             </button>
                             <button class="btn btn-sm btn-delete" data-id="${spot.id_spot}" data-alamat="${htmlEscape(spot.alamat)}">
                                 🗑️ Hapus
+                            </button>
+                            <button class="btn-lihat-peta" onclick="zoomToSpot('${htmlEscape(spot.alamat)}')" title="Lihat di Peta">
+                                🗺️ Peta
                             </button>
                         </td>
                     </tr>`;

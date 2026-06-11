@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catatan Memancing - Fishing Log</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=1.2">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .tabs-container {
@@ -98,6 +100,45 @@
             justify-content: center;
             font-size: 0.75rem;
         }
+        
+        /* Leaflet popup & map custom styles */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            box-shadow: var(--shadow-lg) !important;
+            border: 1px solid var(--border) !important;
+            background: var(--surface) !important;
+            color: var(--text-main) !important;
+        }
+        .leaflet-popup-tip {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+        }
+        .spot-popup-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+            color: var(--text-main);
+        }
+        .spot-popup-type {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: white;
+        }
+        .spot-popup-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 0.35rem;
+        }
+        .spot-popup-dist {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -168,6 +209,18 @@
                     <tbody></tbody>
                 </table>
             </div>
+
+            <!-- Interactive Map Section -->
+            <div style="margin-top: 2.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 600; margin: 0;"><i class="fas fa-map-marked-alt" style="color: var(--accent);"></i> Peta Interaktif Spot</h3>
+                    <span id="mapStatus" class="map-status" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;"></span>
+                </div>
+                <div id="mapContainer" style="height: 400px; border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm); z-index: 1;"></div>
+                <div class="geocode-spinner" id="geocodeSpinner" style="display: none; color: var(--accent); font-size: 0.85rem; margin-top: 0.5rem; font-weight: 500;">
+                    <i class="fas fa-spinner fa-spin"></i> Sedang memetakan lokasi spot...
+                </div>
+            </div>
         </div>
 
         <!-- Catatan Content -->
@@ -217,13 +270,22 @@
     <!-- Modals -->
     <!-- Spot Modal -->
     <div id="spotModal" class="glass" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
-        <div class="glass" style="background: white; width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem;">
+        <div class="glass" style="background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem;">
             <h2 id="spotModalTitle">Tambah Spot</h2>
             <form id="spotForm">
                 <input type="hidden" id="id_spot">
                 <div class="form-group">
                     <label class="form-label">Alamat / Lokasi</label>
-                    <input type="text" id="alamat" class="form-input" required placeholder="Contoh: Waduk Gajah Mungkur">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="alamat" class="form-input" required placeholder="Contoh: Waduk Gajah Mungkur" style="flex: 1;">
+                        <button type="button" id="btnGPS" class="btn-primary" style="padding: 0.75rem; border-radius: var(--radius-md);" title="Gunakan Lokasi GPS Saat Ini">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pilih Titik di Peta (Klik untuk set pin)</label>
+                    <div id="modalMap" style="height: 180px; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; margin-bottom: 0.5rem; z-index: 1;"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Jenis Spot</label>
@@ -247,7 +309,7 @@
 
     <!-- Catatan Modal -->
     <div id="catatanModal" class="glass" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
-        <div class="glass" style="background: white; width: 100%; max-width: 600px; border-radius: var(--radius-lg); padding: 2rem;">
+        <div class="glass" style="background: var(--surface); width: 100%; max-width: 600px; border-radius: var(--radius-lg); padding: 2rem;">
             <h2 id="catatanModalTitle">Tambah Catatan</h2>
             <form id="catatanForm">
                 <input type="hidden" id="id_catatan">
@@ -287,7 +349,7 @@
 
     <!-- Tangkapan Modal -->
     <div id="tangkapanModal" class="glass" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
-        <div class="glass" style="background: white; width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem;">
+        <div class="glass" style="background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem;">
             <h2 id="tangkapanModalTitle">Tambah Tangkapan</h2>
             <form id="tangkapanForm">
                 <input type="hidden" id="id_tangkapan">
@@ -325,7 +387,7 @@
 
     <!-- Photo Modal -->
     <div id="photoModal" class="glass" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
-        <div class="glass" style="background: white; width: 100%; max-width: 600px; border-radius: var(--radius-lg); padding: 2rem;">
+        <div class="glass" style="background: var(--surface); width: 100%; max-width: 600px; border-radius: var(--radius-lg); padding: 2rem;">
             <h2>Kelola Foto</h2>
             <form id="photoForm">
                 <input type="hidden" id="id_tangkapan_foto">
@@ -355,6 +417,12 @@
             perjalanan: '../api/perjalanan_api.php',
             foto: '../api/foto_api.php'
         };
+
+        // Map Global Variables
+        let mapInitialized = false;
+        let leafletMap = null;
+        let markersLayer = null;
+        let allSpotsData = [];
 
         $(document).ready(function () {
             // Dark Mode Logic
@@ -535,6 +603,11 @@
             $(`.tab-btn:contains(${target.charAt(0).toUpperCase() + target.slice(1)})`).addClass('active');
             $('.tab-content').removeClass('active');
             $(`#${target}-content`).addClass('active');
+            if (target === 'spot' && leafletMap) {
+                setTimeout(() => {
+                    leafletMap.invalidateSize();
+                }, 100);
+            }
         }
 
         function loadOptions() {
@@ -551,19 +624,35 @@
         function loadSpot() {
             $.get(apis.spot, res => {
                 const tbody = $('#spotTable tbody').empty();
-                res.data.forEach(row => {
+                allSpotsData = res.data || [];
+                allSpotsData.forEach(row => {
                     tbody.append(`<tr>
                         <td><strong>${row.alamat}</strong></td>
                         <td>${row.jenis_spot}</td>
                         <td>${row.jarak_lokasi} km</td>
                         <td><small>${row.deskripsi_spot || '-'}</small></td>
                         <td style="text-align: right;">
+                            <button onclick="zoomToSpot('${htmlEscape(row.alamat)}')" class="btn-primary" style="padding: 0.5rem 0.75rem; background: var(--accent);" title="Lihat di Peta"><i class="fas fa-map-marked-alt"></i></button>
                             <button onclick="editSpot(${row.id_spot})" class="btn-primary" style="padding: 0.5rem 0.75rem;"><i class="fas fa-edit"></i></button>
                             <button onclick="deleteData('spot', ${row.id_spot})" class="btn-primary" style="background: var(--danger); padding: 0.5rem 0.75rem;"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`);
                 });
+                if (allSpotsData.length > 0) {
+                    plotSpots(allSpotsData);
+                }
             });
+        }
+
+        // Helper to escape HTML characters
+        function htmlEscape(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
         }
 
         function loadCatatan() {
@@ -614,6 +703,7 @@
                 $('#jarak_lokasi_spot').val(res.data.jarak_lokasi);
                 $('#deskripsi_spot').val(res.data.deskripsi_spot);
                 $('#spotModal').css('display', 'flex');
+                initModalMap(res.data.alamat);
             });
         }
 
@@ -662,6 +752,7 @@
             $('#spotForm')[0].reset();
             $('#id_spot').val('');
             $('#spotModal').css('display', 'flex');
+            initModalMap();
         }
 
         function openCatatanModal() {
@@ -714,10 +805,328 @@
 
         function showAlert(msg, type) {
             const color = type === 'success' ? 'var(--success)' : 'var(--danger)';
-            const alert = $(`<div class="animate-fade" style="padding: 1rem; background: white; border-left: 4px solid ${color}; border-radius: var(--radius-md); box-shadow: var(--shadow-md); margin-bottom: 2rem;">${msg}</div>`);
+            const alert = $(`<div class="animate-fade" style="padding: 1rem; background: var(--surface); color: var(--text-main); border-left: 4px solid ${color}; border-radius: var(--radius-md); box-shadow: var(--shadow-md); margin-bottom: 2rem;">${msg}</div>`);
             $('#alertPlaceholder').html(alert);
             setTimeout(() => alert.fadeOut(), 3000);
         }
+
+        // ===== LEAFLET MAP IMPLEMENTATION =====
+        const SPOT_COLORS = {
+            'Sungai': '#10b981', 'Danau': '#0ea5e9', 'Laut': '#3b82f6',
+            'Waduk': '#f59e0b', 'Kolam': '#eab308', 'Rawa': '#64748b', 'Lainnya': '#ec4899'
+        };
+
+        function getSpotIcon(jenis) {
+            const color = SPOT_COLORS[jenis] || '#0ea5e9';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+                <path d="M16 0C7.163 0 0 7.163 0 16c0 10 16 26 16 26S32 26 32 16C32 7.163 24.837 0 16 0z" fill="${color}" stroke="white" stroke-width="2"/>
+                <circle cx="16" cy="16" r="7" fill="white" opacity="0.9"/>
+            </svg>`;
+            return L.divIcon({
+                html: `<div style="position:relative;">${svg}</div>`,
+                className: '',
+                iconSize: [32, 42],
+                iconAnchor: [16, 42],
+                popupAnchor: [0, -44]
+            });
+        }
+
+        async function geocodeAddress(address) {
+            const cacheKey = 'coord_' + address;
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                return { coords: JSON.parse(cached), cached: true };
+            }
+            
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Indonesia')}&limit=1`;
+            try {
+                const resp = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+                const data = await resp.json();
+                if (data && data.length > 0) {
+                    const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    localStorage.setItem(cacheKey, JSON.stringify(coords));
+                    return { coords, cached: false };
+                }
+            } catch(e) { /* ignore */ }
+            return null;
+        }
+
+        async function initMap() {
+            if (mapInitialized) return;
+            mapInitialized = true;
+
+            leafletMap = L.map('mapContainer', { zoomControl: true }).setView([-2.5, 117.0], 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(leafletMap);
+
+            markersLayer = L.featureGroup().addTo(leafletMap);
+        }
+
+        async function plotSpots(spots) {
+            await initMap();
+            markersLayer.clearLayers();
+            
+            const status = document.getElementById('mapStatus');
+            const spinner = document.getElementById('geocodeSpinner');
+            
+            if (spots.length === 0) {
+                status.innerHTML = '<i class="fas fa-info-circle"></i> Belum ada spot untuk ditampilkan';
+                return;
+            }
+            
+            spinner.style.display = 'block';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memetakan lokasi...';
+            let geocoded = 0;
+            const bounds = [];
+
+            for (const spot of spots) {
+                const res = await geocodeAddress(spot.alamat);
+                if (res && res.coords) {
+                    const coords = res.coords;
+                    geocoded++;
+                    bounds.push([coords.lat, coords.lng]);
+                    const color = SPOT_COLORS[spot.jenis_spot] || '#0ea5e9';
+                    const icon = getSpotIcon(spot.jenis_spot);
+                    const desc = spot.deskripsi_spot && spot.deskripsi_spot.length > 100
+                        ? spot.deskripsi_spot.substring(0,100) + '...'
+                        : spot.deskripsi_spot;
+                    const popup = `
+                        <div style="min-width:200px;">
+                            <div class="spot-popup-title">📍 ${htmlEscape(spot.alamat)}</div>
+                            <span class="spot-popup-type" style="background:${color}">${htmlEscape(spot.jenis_spot)}</span>
+                            ${spot.jarak_lokasi ? `<div class="spot-popup-dist">🛣️ Jarak: ${spot.jarak_lokasi} km</div>` : ''}
+                            <div class="spot-popup-desc">${htmlEscape(desc) || ''}</div>
+                        </div>
+                    `;
+                    L.marker([coords.lat, coords.lng], { icon }).addTo(markersLayer).bindPopup(popup);
+                    
+                    if (!res.cached) {
+                        await new Promise(r => setTimeout(r, 1100));
+                    }
+                }
+            }
+
+            spinner.style.display = 'none';
+            if (bounds.length > 0) {
+                leafletMap.fitBounds(bounds, { padding: [40, 40] });
+                status.innerHTML = `<i class="fas fa-check-circle"></i> ${geocoded} spot dipetakan`;
+            } else {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lokasi tidak ditemukan';
+            }
+        }
+
+        async function geocodeAddress(address) {
+            // Check if address has coordinates in brackets [lat, lng]
+            const coordRegex = /\[\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*\]/;
+            const match = address.match(coordRegex);
+            if (match) {
+                const coords = { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                return { coords, cached: true };
+            }
+
+            const cacheKey = 'coord_' + address;
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                return { coords: JSON.parse(cached), cached: true };
+            }
+            
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Indonesia')}&limit=1`;
+            try {
+                const resp = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+                const data = await resp.json();
+                if (data && data.length > 0) {
+                    const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    localStorage.setItem(cacheKey, JSON.stringify(coords));
+                    return { coords, cached: false };
+                }
+            } catch(e) { /* ignore */ }
+            return null;
+        }
+
+        async function initMap() {
+            if (mapInitialized) return;
+            mapInitialized = true;
+
+            leafletMap = L.map('mapContainer', { zoomControl: true }).setView([-2.5, 117.0], 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(leafletMap);
+
+            markersLayer = L.featureGroup().addTo(leafletMap);
+        }
+
+        async function plotSpots(spots) {
+            await initMap();
+            markersLayer.clearLayers();
+            
+            const status = document.getElementById('mapStatus');
+            const spinner = document.getElementById('geocodeSpinner');
+            
+            if (spots.length === 0) {
+                status.innerHTML = '<i class="fas fa-info-circle"></i> Belum ada spot untuk ditampilkan';
+                return;
+            }
+            
+            spinner.style.display = 'block';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memetakan lokasi...';
+            let geocoded = 0;
+            const bounds = [];
+
+            for (const spot of spots) {
+                const res = await geocodeAddress(spot.alamat);
+                if (res && res.coords) {
+                    const coords = res.coords;
+                    geocoded++;
+                    bounds.push([coords.lat, coords.lng]);
+                    const color = SPOT_COLORS[spot.jenis_spot] || '#0ea5e9';
+                    const icon = getSpotIcon(spot.jenis_spot);
+                    const desc = spot.deskripsi_spot && spot.deskripsi_spot.length > 100
+                        ? spot.deskripsi_spot.substring(0,100) + '...'
+                        : spot.deskripsi_spot;
+                    const popup = `
+                        <div style="min-width:200px;">
+                            <div class="spot-popup-title">📍 ${htmlEscape(spot.alamat)}</div>
+                            <span class="spot-popup-type" style="background:${color}">${htmlEscape(spot.jenis_spot)}</span>
+                            ${spot.jarak_lokasi ? `<div class="spot-popup-dist">🛣️ Jarak: ${spot.jarak_lokasi} km</div>` : ''}
+                            <div class="spot-popup-desc">${htmlEscape(desc) || ''}</div>
+                        </div>
+                    `;
+                    L.marker([coords.lat, coords.lng], { icon }).addTo(markersLayer).bindPopup(popup);
+                    
+                    if (!res.cached) {
+                        await new Promise(r => setTimeout(r, 1100));
+                    }
+                }
+            }
+
+            spinner.style.display = 'none';
+            if (bounds.length > 0) {
+                leafletMap.fitBounds(bounds, { padding: [40, 40] });
+                status.innerHTML = `<i class="fas fa-check-circle"></i> ${geocoded} spot dipetakan`;
+            } else {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lokasi tidak ditemukan';
+            }
+        }
+
+        function zoomToSpot(alamat) {
+            if (!leafletMap) return;
+            markersLayer.eachLayer(layer => {
+                if (layer.getPopup && layer.getPopup()) {
+                    const content = layer.getPopup().getContent();
+                    if (content.includes(alamat)) {
+                        leafletMap.setView(layer.getLatLng(), 14);
+                        layer.openPopup();
+                        document.getElementById('mapContainer').scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        }
+
+        // ===== MODAL MAP AND GPS IMPLEMENTATION =====
+        let leafletModalMap = null;
+        let modalMarker = null;
+
+        function initModalMap(existingAddress) {
+            if (!leafletModalMap) {
+                leafletModalMap = L.map('modalMap', { zoomControl: true }).setView([-2.5, 117.0], 5);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(leafletModalMap);
+                
+                leafletModalMap.on('click', async function(e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    await setModalMarker(lat, lng, true);
+                });
+            }
+            
+            setTimeout(() => {
+                leafletModalMap.invalidateSize();
+                
+                if (existingAddress) {
+                    const coordRegex = /\[\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*\]/;
+                    const match = existingAddress.match(coordRegex);
+                    if (match) {
+                        const lat = parseFloat(match[1]);
+                        const lng = parseFloat(match[2]);
+                        setModalMarker(lat, lng, false);
+                        leafletModalMap.setView([lat, lng], 14);
+                        return;
+                    }
+                }
+                
+                leafletModalMap.setView([-2.5, 117.0], 5);
+                if (modalMarker) {
+                    leafletModalMap.removeLayer(modalMarker);
+                    modalMarker = null;
+                }
+            }, 200);
+        }
+
+        async function setModalMarker(lat, lng, shouldReverseGeocode) {
+            if (modalMarker) {
+                leafletModalMap.removeLayer(modalMarker);
+            }
+            modalMarker = L.marker([lat, lng]).addTo(leafletModalMap);
+            
+            if (shouldReverseGeocode) {
+                $('#alamat').val(`Mendeteksi alamat titik [${lat.toFixed(5)}, ${lng.toFixed(5)}]...`);
+                
+                const reverseUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+                try {
+                    const resp = await fetch(reverseUrl, { headers: { 'Accept-Language': 'id' } });
+                    const data = await resp.json();
+                    if (data && data.display_name) {
+                        const parts = data.display_name.split(',');
+                        const shortName = parts.slice(0, 3).join(',').trim();
+                        const finalAddress = `${shortName} [${lat.toFixed(5)}, ${lng.toFixed(5)}]`;
+                        $('#alamat').val(finalAddress);
+                        
+                        localStorage.setItem('coord_' + finalAddress, JSON.stringify({ lat, lng }));
+                    } else {
+                        $('#alamat').val(`Spot Kustom [${lat.toFixed(5)}, ${lng.toFixed(5)}]`);
+                    }
+                } catch(e) {
+                    $('#alamat').val(`Spot Kustom [${lat.toFixed(5)}, ${lng.toFixed(5)}]`);
+                }
+            }
+        }
+
+        // GPS Geolocation trigger
+        $(document).on('click', '#btnGPS', function() {
+            if (!navigator.geolocation) {
+                alert('Geolocation tidak didukung oleh browser Anda.');
+                return;
+            }
+            
+            const btn = $(this);
+            const originalHtml = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+            
+            navigator.geolocation.getCurrentPosition(
+                async function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    if (leafletModalMap) {
+                        leafletModalMap.setView([lat, lng], 14);
+                        await setModalMarker(lat, lng, true);
+                    }
+                    
+                    btn.prop('disabled', false).html(originalHtml);
+                },
+                function(error) {
+                    alert('Gagal mendeteksi lokasi GPS: ' + error.message + '\n\nPastikan Anda mengizinkan akses lokasi dan menggunakan koneksi HTTPS jika tidak di localhost.');
+                    btn.prop('disabled', false).html(originalHtml);
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        });
     </script>
 </body>
 </html>

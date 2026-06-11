@@ -3,112 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan - Fishing Log</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Laporan & Analisis — Fishing Log</title>
+    <meta name="description" content="Laporan dan analisis lengkap aktivitas memancing Anda — statistik tangkapan, perjalanan, dan spot terpopuler.">
+    <link rel="stylesheet" href="../assets/css/style.css?v=1.2">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        .report-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        /* ====== LAPORAN PAGE STYLES ====== */
+        body { font-family: 'Outfit', sans-serif; }
+
+        /* --- Hero Section --- */
+        .laporan-hero {
+            position: relative;
+            background: linear-gradient(135deg, #0a1628 0%, #0d2137 50%, #0a3d55 100%);
+            padding: 3rem 2rem 5rem;
+            overflow: hidden;
+            margin-bottom: 0;
         }
-        .report-card {
-            background: var(--surface);
-            padding: 1.5rem;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: all 0.3s ease;
+        .laporan-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(0, 200, 255, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(64, 190, 164, 0.1) 0%, transparent 50%);
         }
-        .report-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--accent);
+        .laporan-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--bg);
+            clip-path: ellipse(55% 100% at 50% 100%);
         }
-        .report-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            background: rgba(var(--accent-rgb), 0.1);
-            color: var(--accent);
-        }
-        .report-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: block;
-        }
-        .report-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-        .filter-bar {
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .hero-left h1 {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        .hero-left h1 span { color: #40bea4; }
+        .hero-left p { color: rgba(255,255,255,0.65); font-size: 1rem; }
+        .hero-stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .hero-stat-chip {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            min-width: 100px;
+        }
+        .hero-stat-chip .val {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #40bea4;
+            display: block;
+            line-height: 1;
+        }
+        .hero-stat-chip .lbl {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* --- Main Container --- */
+        .laporan-body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* --- Filter & Actions Bar --- */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+            margin-bottom: 2.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
         }
-        .photo-strip {
+        .action-bar-left {
             display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding: 0.25rem;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
-        .photo-strip img {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            object-fit: cover;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .photo-strip img:hover {
-            transform: scale(1.1);
-        }
-        .table-custom {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 0.5rem;
-        }
-        .table-custom th {
-            padding: 1rem;
-            text-align: left;
-            color: var(--text-muted);
+        .action-bar label {
             font-weight: 600;
             font-size: 0.875rem;
+            color: var(--text-muted);
+            white-space: nowrap;
         }
-        .table-custom td {
-            padding: 1rem;
+        .action-bar select {
+            min-width: 220px;
+        }
+        .btn-export {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.5rem;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(231,76,60,0.3);
+        }
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231,76,60,0.4);
+        }
+        .btn-export:disabled {
+            opacity: 0.7;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        /* --- Stat Cards Row --- */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
             background: var(--surface);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .table-custom tr td:first-child { border-left: 1px solid var(--border); border-radius: var(--radius-md) 0 0 var(--radius-md); }
-        .table-custom tr td:last-child { border-right: 1px solid var(--border); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
-        
-        .progress-bar-container {
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+            background: var(--card-accent, var(--accent));
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            border-color: var(--card-accent, var(--accent));
+        }
+        .stat-icon {
+            width: 54px; height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .stat-info .val {
+            font-size: 1.75rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+        }
+        .stat-info .lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        /* --- Section Titles --- */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .section-title i {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+        .section-title h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* --- Charts Grid --- */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Tables --- */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+        .lp-table {
             width: 100%;
+            border-collapse: collapse;
+        }
+        .lp-table th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border);
+        }
+        .lp-table td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+        .lp-table tbody tr:last-child td { border-bottom: none; }
+        .lp-table tbody tr:hover { background: rgba(var(--accent-rgb), 0.04); }
+
+        /* --- Fish Badge --- */
+        .fish-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(var(--accent-rgb), 0.12);
+            color: var(--accent);
+            margin: 2px;
+        }
+
+        /* --- Progress Stats --- */
+        .fish-stat-item {
+            margin-bottom: 1.25rem;
+        }
+        .fish-stat-item:last-child { margin-bottom: 0; }
+        .fish-stat-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+        .fish-stat-label span:first-child {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .fish-stat-label span:last-child {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .progress-track {
             height: 8px;
             background: var(--border);
-            border-radius: 4px;
+            border-radius: 999px;
             overflow: hidden;
-            margin-top: 0.5rem;
         }
-        .progress-bar-fill {
+        .progress-fill {
             height: 100%;
-            background: var(--accent);
+            border-radius: 999px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, var(--accent), #40bea4);
         }
+
+        /* --- Bottom Grid --- */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* --- Photo Strip --- */
+        .photo-strip {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .photo-strip img {
+            width: 38px;
+            height: 38px;
+            border-radius: 6px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid var(--border);
+        }
+        .photo-strip img:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-color: var(--accent);
+        }
+
+        /* --- Empty State --- */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+        .empty-state i { font-size: 3rem; opacity: 0.3; margin-bottom: 0.75rem; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* --- Spot Rank Badge --- */
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .rank-1 { background: linear-gradient(135deg,#FFD700,#FFA500); color: white; }
+        .rank-2 { background: linear-gradient(135deg,#C0C0C0,#909090); color: white; }
+        .rank-3 { background: linear-gradient(135deg,#CD7F32,#8B4513); color: white; }
+        .rank-other { background: var(--border); color: var(--text-muted); }
+
+        /* --- Trip Timeline Badge --- */
+        .trip-count-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .charts-grid, .bottom-grid { grid-template-columns: 1fr; }
+            .hero-stats { justify-content: center; }
+        }
+
+        /* --- Photo Modal --- */
+        .photo-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0,0,0,0.88);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+        }
+        .photo-modal-overlay.active { display: flex; }
+        .photo-modal-inner {
+            max-width: 90vw;
+            max-height: 90vh;
+            text-align: center;
+        }
+        .photo-modal-inner img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .photo-modal-inner p {
+            color: white;
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
+        .photo-modal-close {
+            position: absolute;
+            top: 1rem; right: 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 50%;
+            width: 42px; height: 42px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .photo-modal-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* --- Loading Skeleton --- */
+        .skeleton {
+            background: linear-gradient(90deg, var(--border) 25%, rgba(255,255,255,0.05) 50%, var(--border) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* --- Count-up animation --- */
+        @keyframes countup {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .count-animate { animation: countup 0.5s ease forwards; }
     </style>
 </head>
 <body>
+    <!-- ===== NAVBAR ===== -->
     <nav class="navbar-custom">
         <a href="dashboard.php" class="nav-logo">
             <span style="color: var(--accent);">⚓</span> Fishing Log
@@ -142,281 +484,690 @@
         </div>
     </nav>
 
-    <main class="main-content">
-        <header class="dashboard-header animate-fade">
-            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">Laporan & Analisis</h1>
-            <p style="color: var(--text-muted);">Tinjau pencapaian dan data statistik aktivitas memancing Anda.</p>
-        </header>
+    <!-- ===== HERO ===== -->
+    <div class="laporan-hero">
+        <div class="hero-inner">
+            <div class="hero-left">
+                <h1>📊 Laporan & <span>Analisis</span></h1>
+                <p>Data lengkap aktivitas memancing Anda dalam satu tampilan</p>
+            </div>
+            <div class="hero-stats" id="heroStats">
+                <div class="hero-stat-chip">
+                    <span class="val" id="heroTrips">—</span>
+                    <span class="lbl">Perjalanan</span>
+                </div>
+                <div class="hero-stat-chip">
+                    <span class="val" id="heroCatches">—</span>
+                    <span class="lbl">Tangkapan</span>
+                </div>
+                <div class="hero-stat-chip">
+                    <span class="val" id="heroDistance">—</span>
+                    <span class="lbl">Km Ditempuh</span>
+                </div>
+                <div class="hero-stat-chip">
+                    <span class="val" id="heroSpots">—</span>
+                    <span class="lbl">Spot</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <div class="filter-bar animate-fade" style="animation-delay: 0.1s;">
-            <div style="display: flex; gap: 1rem; align-items: center;">
-                <label class="form-label" style="margin: 0;">Filter Perjalanan:</label>
-                <select id="tripFilter" class="form-input" style="min-width: 250px;">
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="laporan-body" id="laporanBody">
+
+        <!-- Action Bar -->
+        <div class="action-bar animate-fade">
+            <div class="action-bar-left">
+                <label><i class="fas fa-filter"></i> Filter:</label>
+                <select id="tripFilter" class="form-input">
                     <option value="">Semua Perjalanan</option>
                 </select>
             </div>
-            <button id="btnExport" class="btn-primary">
+            <button id="btnExport" class="btn-export">
                 <i class="fas fa-file-pdf"></i> Export PDF
             </button>
         </div>
 
-        <div id="statsContainer" class="report-grid animate-fade" style="animation-delay: 0.2s;">
-            <!-- Will be loaded via AJAX -->
+        <!-- Stat Cards -->
+        <div class="stat-cards animate-fade" style="animation-delay:0.1s;" id="statsContainer">
+            <!-- JS rendered -->
         </div>
 
-        <section class="animate-fade" style="animation-delay: 0.3s; margin-bottom: 3rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-route" style="color: var(--accent);"></i> Ringkasan Perjalanan
-                </h3>
-            </div>
-            <div class="table-responsive">
-                <table class="table-custom" id="summaryTable">
-                    <thead>
-                        <tr>
-                            <th>Waktu</th>
-                            <th>Jarak</th>
-                            <th>Tangkapan</th>
-                            <th>Jenis Ikan</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="animate-fade" style="animation-delay: 0.4s; margin-bottom: 3rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="display: flex; align-items: center; gap: 0.75rem;">
-                    <i class="fas fa-fish" style="color: var(--accent);"></i> Detail Tangkapan
-                </h3>
-            </div>
-            <div class="table-responsive">
-                <table class="table-custom" id="catchesDetailTable">
-                    <thead>
-                        <tr>
-                            <th>Ikan</th>
-                            <th>Jumlah</th>
-                            <th>Tanggal Jawa</th>
-                            <th>Media</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </section>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;" class="animate-fade" style="animation-delay: 0.5s;">
-            <section>
-                <h3 style="margin-bottom: 1rem;">Statistik Ikan</h3>
-                <div class="glass" style="padding: 1.5rem; background: white;" id="statsDetailContainer">
-                    <!-- Progress bars will go here -->
+        <!-- Charts -->
+        <div class="charts-grid animate-fade" style="animation-delay:0.2s;">
+            <div class="chart-card">
+                <div class="section-title">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3>Distribusi Jenis Ikan</h3>
                 </div>
-            </section>
-            <section>
-                <h3 style="margin-bottom: 1rem;">Spot Terpopuler</h3>
-                <div class="table-responsive">
-                    <table class="table-custom" id="spotsDetailTable">
-                        <thead>
-                            <tr>
-                                <th>Lokasi</th>
-                                <th>Jenis</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <div class="chart-wrapper">
+                    <canvas id="donutChart"></canvas>
+                    <div id="donutEmpty" class="empty-state" style="display:none;">
+                        <i class="fas fa-fish"></i><p>Belum ada data tangkapan</p>
+                    </div>
                 </div>
-            </section>
+            </div>
+            <div class="chart-card">
+                <div class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>Tangkapan per Perjalanan</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                    <div id="barEmpty" class="empty-state" style="display:none;">
+                        <i class="fas fa-route"></i><p>Belum ada data perjalanan</p>
+                    </div>
+                </div>
+            </div>
         </div>
-    </main>
 
-    <!-- Photo View Modal -->
-    <div id="photoViewModal" class="glass" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.8);">
-        <div style="max-width: 90%; max-height: 90%;">
-            <img id="modalImg" src="" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
-            <p id="modalDesc" style="color: white; text-align: center; margin-top: 1rem; font-size: 1.25rem;"></p>
-            <button onclick="closePhotoModal()" class="btn-primary" style="margin: 2rem auto; display: block;">Tutup</button>
+        <!-- Bottom Grid: Fish Stats + Spot Ranking -->
+        <div class="bottom-grid animate-fade" style="animation-delay:0.3s;">
+            <div class="chart-card">
+                <div class="section-title">
+                    <i class="fas fa-trophy"></i>
+                    <h3>Statistik Ikan</h3>
+                </div>
+                <div id="fishStatsContainer">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Spot Terpopuler</h3>
+                </div>
+                <div id="spotsRankContainer">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trips Summary Table -->
+        <div class="table-card animate-fade" style="animation-delay:0.4s;">
+            <div class="section-title">
+                <i class="fas fa-route"></i>
+                <h3>Ringkasan Perjalanan</h3>
+            </div>
+            <table class="lp-table" id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Waktu Mulai</th>
+                        <th>Waktu Selesai</th>
+                        <th>Jarak</th>
+                        <th>Tangkapan</th>
+                        <th>Jenis Ikan</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryTbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Catches Detail Table -->
+        <div class="table-card animate-fade" style="animation-delay:0.5s;">
+            <div class="section-title">
+                <i class="fas fa-fish"></i>
+                <h3>Detail Tangkapan</h3>
+            </div>
+            <table class="lp-table" id="catchesDetailTable">
+                <thead>
+                    <tr>
+                        <th>Nama Ikan</th>
+                        <th>Jenis</th>
+                        <th>Jumlah</th>
+                        <th>Tanggal Jawa</th>
+                        <th>Media</th>
+                    </tr>
+                </thead>
+                <tbody id="catchesTbody"></tbody>
+            </table>
+        </div>
+
+    </div><!-- /laporan-body -->
+
+    <!-- ===== PHOTO MODAL ===== -->
+    <div class="photo-modal-overlay" id="photoModal">
+        <button class="photo-modal-close" onclick="closePhotoModal()"><i class="fas fa-times"></i></button>
+        <div class="photo-modal-inner">
+            <img id="modalImg" src="" alt="">
+            <p id="modalDesc"></p>
         </div>
     </div>
 
+    <!-- ===== SCRIPTS ===== -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <script>
-        const apis = {
-            report: '../api/laporan_api.php',
-            trips: '../api/perjalanan_api.php',
-            foto: '../api/foto_api.php'
-        };
+    const apis = {
+        report: '../api/laporan_api.php',
+        trips: '../api/perjalanan_api.php',
+        foto: '../api/foto_api.php'
+    };
 
-        $(document).ready(function() {
-            // Dark Mode Logic
-            const body = $('body');
-            const themeToggles = $('#themeToggle, .themeToggleMobile');
-            
-            function updateThemeIcons(isDark) {
-                const icons = themeToggles.find('i');
-                const text = $('#themeTextMobile');
-                if (isDark) {
-                    icons.removeClass('fa-moon').addClass('fa-sun');
-                    text.text('Tema Terang');
-                } else {
-                    icons.removeClass('fa-sun').addClass('fa-moon');
-                    text.text('Tema Malam');
-                }
-            }
+    const CHART_COLORS = [
+        '#40bea4','#3498db','#e74c3c','#f1c40f',
+        '#9b59b6','#e67e22','#1abc9c','#2ecc71',
+        '#e91e63','#00bcd4','#ff5722','#607d8b'
+    ];
 
-            if (localStorage.getItem('theme') === 'dark') {
-                body.addClass('dark-mode');
-                updateThemeIcons(true);
-            }
+    let donutChartInst = null;
+    let barChartInst = null;
+    let currentData = null;
 
-            themeToggles.on('click', function() {
-                body.toggleClass('dark-mode');
-                const isDark = body.hasClass('dark-mode');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                updateThemeIcons(isDark);
-            });
-
-            loadTrips();
-            loadReport();
-
-            $('#navToggle').on('click', function() {
-                $('#navLinks').toggleClass('active');
-                $(this).find('i').toggleClass('fa-bars fa-times');
-            });
-
-            $('#tripFilter').on('change', loadReport);
-            $('#btnExport').on('click', () => alert('Fungsi Export PDF sedang disiapkan.'));
+    $(document).ready(function() {
+        // --- Dark Mode ---
+        const body = $('body');
+        const themeToggles = $('#themeToggle, .themeToggleMobile');
+        function updateThemeIcons(isDark) {
+            themeToggles.find('i').toggleClass('fa-moon', !isDark).toggleClass('fa-sun', isDark);
+            $('#themeTextMobile').text(isDark ? 'Tema Terang' : 'Tema Malam');
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            body.addClass('dark-mode');
+            updateThemeIcons(true);
+        }
+        themeToggles.on('click', function() {
+            body.toggleClass('dark-mode');
+            const isDark = body.hasClass('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons(isDark);
         });
 
-        function loadTrips() {
-            $.get(apis.trips, res => {
-                const select = $('#tripFilter');
-                res.data.forEach(t => {
-                    select.append(`<option value="${t.id_perjalanan}">Perjalanan #${t.id_perjalanan} (${t.waktu_mulai})</option>`);
-                });
+        // --- Mobile Nav ---
+        $('#navToggle').on('click', function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('fa-bars fa-times');
+        });
+
+        // --- Load Data ---
+        loadTrips();
+        loadReport();
+        $('#tripFilter').on('change', loadReport);
+        $('#btnExport').on('click', exportPDF);
+    });
+
+    function loadTrips() {
+        $.get(apis.trips, res => {
+            const select = $('#tripFilter');
+            (res.data || []).forEach(t => {
+                select.append(`<option value="${t.id_perjalanan}">Perjalanan #${t.id_perjalanan} — ${formatDate(t.waktu_mulai)}</option>`);
             });
+        });
+    }
+
+    function loadReport() {
+        const tripId = $('#tripFilter').val();
+        const url = tripId ? `${apis.report}?id_perjalanan=${tripId}` : apis.report;
+        $.get(url, res => {
+            if (!res.success) return;
+            currentData = res.data;
+            renderHeroStats(res.data.stats);
+            renderStatCards(res.data.stats);
+            renderCharts(res.data.catches, res.data.trips);
+            renderFishStats(res.data.catches);
+            renderSpotsRank(res.data.spots);
+            renderSummaryTable(res.data.trips);
+            renderCatchesTable(res.data.catches);
+        });
+    }
+
+    function renderHeroStats(stats) {
+        animateCount('#heroTrips', stats.total_trips);
+        animateCount('#heroCatches', stats.total_catches);
+        $('#heroDistance').text(parseFloat(stats.total_distance).toFixed(1));
+        animateCount('#heroSpots', stats.total_spots);
+    }
+
+    function animateCount(sel, target) {
+        const el = $(sel);
+        const duration = 800;
+        const start = performance.now();
+        function step(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            el.text(Math.round(progress * target));
+            if (progress < 1) requestAnimationFrame(step);
         }
+        requestAnimationFrame(step);
+    }
 
-        function loadReport() {
-            const tripId = $('#tripFilter').val();
-            const url = tripId ? `${apis.report}?id_perjalanan=${tripId}` : apis.report;
-
-            $.get(url, res => {
-                renderStats(res.data.stats);
-                renderSummary(res.data.trips);
-                renderCatches(res.data.catches);
-                renderSpots(res.data.spots);
-                renderFishStats(res.data.catches);
-            });
-        }
-
-        function renderStats(stats) {
-            const cards = [
-                { label: 'Total Perjalanan', value: stats.total_trips, icon: 'route', color: 'var(--accent)' },
-                { label: 'Total Tangkapan', value: stats.total_catches, icon: 'fish', color: '#2ecc71' },
-                { label: 'Jarak Tempuh', value: stats.total_distance.toFixed(1) + ' km', icon: 'road', color: '#f1c40f' },
-                { label: 'Spot Lokasi', value: stats.total_spots, icon: 'map-marker-alt', color: '#e74c3c' }
-            ];
-
-            const container = $('#statsContainer').empty();
-            cards.forEach(c => {
-                container.append(`
-                    <div class="report-card">
-                        <div class="report-icon" style="color: ${c.color}; background: ${c.color}15">
-                            <i class="fas fa-${c.icon}"></i>
-                        </div>
-                        <div>
-                            <span class="report-value">${c.value}</span>
-                            <span class="report-label">${c.label}</span>
-                        </div>
+    function renderStatCards(stats) {
+        const cards = [
+            { label: 'Total Perjalanan', value: stats.total_trips, icon: 'route', color: '#3498db', bg: 'rgba(52,152,219,0.12)' },
+            { label: 'Total Tangkapan', value: stats.total_catches, icon: 'fish', color: '#2ecc71', bg: 'rgba(46,204,113,0.12)' },
+            { label: 'Jarak Tempuh', value: parseFloat(stats.total_distance).toFixed(1) + ' km', icon: 'road', color: '#f1c40f', bg: 'rgba(241,196,15,0.12)', isString: true },
+            { label: 'Spot Dikunjungi', value: stats.total_spots, icon: 'map-marker-alt', color: '#e74c3c', bg: 'rgba(231,76,60,0.12)' }
+        ];
+        const container = $('#statsContainer').empty();
+        cards.forEach((c, i) => {
+            container.append(`
+                <div class="stat-card animate-fade" style="animation-delay:${0.1 + i * 0.05}s; --card-accent:${c.color}">
+                    <div class="stat-icon" style="background:${c.bg}; color:${c.color};">
+                        <i class="fas fa-${c.icon}"></i>
                     </div>
-                `);
+                    <div class="stat-info">
+                        <span class="val" style="color:${c.color};">${c.value}</span>
+                        <span class="lbl">${c.label}</span>
+                    </div>
+                </div>
+            `);
+            if (!c.isString) {
+                // animate number
+                const valEl = container.find('.stat-card').last().find('.val');
+                const target = c.value;
+                const dur = 800;
+                const start = performance.now();
+                function step(now) {
+                    const p = Math.min((now - start) / dur, 1);
+                    valEl.text(Math.round(p * target));
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+        });
+    }
+
+    function renderCharts(catches, trips) {
+        // === DONUT CHART — Jenis Ikan ===
+        const fishCount = {};
+        catches.forEach(c => {
+            fishCount[c.jenis_ikan] = (fishCount[c.jenis_ikan] || 0) + parseInt(c.jumlah_ikan);
+        });
+        if (donutChartInst) donutChartInst.destroy();
+        const labels = Object.keys(fishCount);
+        if (labels.length === 0) {
+            $('#donutEmpty').show();
+            $('#donutChart').hide();
+        } else {
+            $('#donutEmpty').hide();
+            $('#donutChart').show();
+            donutChartInst = new Chart(document.getElementById('donutChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: Object.values(fishCount),
+                        backgroundColor: CHART_COLORS.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: 'transparent',
+                        hoverBorderColor: '#fff',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 14,
+                                usePointStyle: true,
+                                font: { family: 'Outfit', size: 11 },
+                                color: getComputedStyle(document.body).getPropertyValue('--text') || '#333'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed} ekor`
+                            }
+                        }
+                    }
+                }
             });
         }
 
-        function renderSummary(trips) {
-            const tbody = $('#summaryTable tbody').empty();
-            trips.forEach(t => {
-                tbody.append(`
-                    <tr>
-                        <td><strong>${t.waktu_mulai}</strong><br><small>${t.waktu_selesai}</small></td>
-                        <td>${t.jarak_lokasi.toFixed(1)} km</td>
-                        <td><strong style="color: var(--accent); font-size: 1.1rem;">${t.total_catches} Ekor</strong></td>
-                        <td>${t.fish_types.join(', ') || '-'}</td>
-                    </tr>
-                `);
+        // === BAR CHART — Tangkapan per Perjalanan ===
+        if (barChartInst) barChartInst.destroy();
+        const tripLabels = trips.map((t, i) => `Trip #${t.id_perjalanan}`);
+        const tripData = trips.map(t => t.total_catches);
+        if (trips.length === 0) {
+            $('#barEmpty').show();
+            $('#barChart').hide();
+        } else {
+            $('#barEmpty').hide();
+            $('#barChart').show();
+            barChartInst = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: tripLabels,
+                    datasets: [{
+                        label: 'Jumlah Tangkapan',
+                        data: tripData,
+                        backgroundColor: CHART_COLORS.map(c => c + 'cc'),
+                        borderColor: CHART_COLORS,
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} ekor`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, font: { family: 'Outfit' } },
+                            grid: { color: 'rgba(128,128,128,0.1)' }
+                        },
+                        x: {
+                            ticks: { font: { family: 'Outfit', size: 11 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
             });
         }
+    }
 
-        function renderCatches(catches) {
-            const tbody = $('#catchesDetailTable tbody').empty();
-            catches.forEach(c => {
-                const tr = $(`
-                    <tr>
-                        <td><strong>${c.nama_ikan}</strong><br><small>${c.jenis_ikan}</small></td>
-                        <td>${c.jumlah_ikan}</td>
-                        <td>${c.tanggal_jawa || '-'}</td>
-                        <td class="photo-cell"><div class="photo-strip">Memuat...</div></td>
-                    </tr>
-                `);
-                tbody.append(tr);
-                
-                // Load photos
-                $.get(apis.foto + '?id_tangkapan=' + c.id_tangkapan, fRes => {
-                    const strip = tr.find('.photo-strip').empty();
-                    if(fRes.data.length === 0) strip.text('-');
+    function renderFishStats(catches) {
+        const stats = {};
+        let total = 0;
+        catches.forEach(c => {
+            stats[c.jenis_ikan] = (stats[c.jenis_ikan] || 0) + parseInt(c.jumlah_ikan);
+            total += parseInt(c.jumlah_ikan);
+        });
+        const container = $('#fishStatsContainer').empty();
+        if (Object.keys(stats).length === 0) {
+            container.html('<div class="empty-state"><i class="fas fa-fish"></i><p>Belum ada data ikan</p></div>');
+            return;
+        }
+        const sorted = Object.entries(stats).sort((a,b) => b[1]-a[1]);
+        sorted.forEach(([jenis, count], i) => {
+            const pct = total > 0 ? ((count/total)*100).toFixed(0) : 0;
+            container.append(`
+                <div class="fish-stat-item">
+                    <div class="fish-stat-label">
+                        <span><i class="fas fa-circle" style="color:${CHART_COLORS[i % CHART_COLORS.length]}; font-size:0.6rem; margin-right:0.4rem;"></i>${jenis}</span>
+                        <span>${count} ekor (${pct}%)</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width:0%; background:${CHART_COLORS[i % CHART_COLORS.length]};" data-target="${pct}"></div>
+                    </div>
+                </div>
+            `);
+        });
+        // Animate progress bars
+        setTimeout(() => {
+            container.find('.progress-fill').each(function() {
+                $(this).css('width', $(this).data('target') + '%');
+            });
+        }, 100);
+    }
+
+    function renderSpotsRank(spots) {
+        const container = $('#spotsRankContainer').empty();
+        if (spots.length === 0) {
+            container.html('<div class="empty-state"><i class="fas fa-map-marker-alt"></i><p>Belum ada spot data</p></div>');
+            return;
+        }
+        const html = spots.slice(0,6).map((s, i) => {
+            const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+            const typeColor = getSpotColor(s.jenis_spot);
+            return `
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border);">
+                    <span class="rank-badge ${rankClass}">${i+1}</span>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.alamat}</div>
+                        <span style="font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:20px; background:${typeColor}22; color:${typeColor}; font-weight:600;">${s.jenis_spot}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        container.html(html);
+    }
+
+    function renderSummaryTable(trips) {
+        const tbody = $('#summaryTbody').empty();
+        if (trips.length === 0) {
+            tbody.append('<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Belum ada perjalanan</td></tr>');
+            return;
+        }
+        trips.forEach((t, i) => {
+            const fishBadges = (t.fish_types || []).slice(0,3).map(f => `<span class="fish-badge"><i class="fas fa-fish"></i>${f}</span>`).join('');
+            const more = t.fish_types && t.fish_types.length > 3 ? `<span class="fish-badge">+${t.fish_types.length - 3}</span>` : '';
+            tbody.append(`
+                <tr>
+                    <td><strong style="color:var(--accent);">#${t.id_perjalanan}</strong></td>
+                    <td>${formatDate(t.waktu_mulai)}</td>
+                    <td>${t.waktu_selesai ? formatDate(t.waktu_selesai) : '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td><strong>${parseFloat(t.jarak_lokasi).toFixed(1)} km</strong></td>
+                    <td>
+                        <span class="trip-count-badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;">
+                            <i class="fas fa-fish"></i> ${t.total_catches} ekor
+                        </span>
+                    </td>
+                    <td>${fishBadges}${more}</td>
+                </tr>
+            `);
+        });
+    }
+
+    function renderCatchesTable(catches) {
+        const tbody = $('#catchesTbody').empty();
+        if (catches.length === 0) {
+            tbody.append('<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem;">Belum ada tangkapan</td></tr>');
+            return;
+        }
+        catches.forEach(c => {
+            const tr = $(`
+                <tr>
+                    <td><strong>${c.nama_ikan}</strong></td>
+                    <td><span class="fish-badge">${c.jenis_ikan}</span></td>
+                    <td><strong style="color:var(--accent);">${c.jumlah_ikan}</strong></td>
+                    <td>${c.tanggal_jawa || '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td><div class="photo-strip" data-id="${c.id_tangkapan}"><span style="color:var(--text-muted);font-size:0.8rem;">Memuat...</span></div></td>
+                </tr>
+            `);
+            tbody.append(tr);
+            // Load photos async
+            $.get(apis.foto + '?id_tangkapan=' + c.id_tangkapan, fRes => {
+                const strip = tr.find('.photo-strip').empty();
+                if (!fRes.data || fRes.data.length === 0) {
+                    strip.html('<span style="color:var(--text-muted);font-size:0.8rem;">—</span>');
+                } else {
                     fRes.data.forEach(f => {
-                        strip.append(`<img src="uploads/${f.nama_file}" onclick="showPhotoModal('${f.nama_file}', '${f.deskripsi || ''}')">`);
+                        strip.append(`<img src="uploads/${f.nama_file}" 
+                            onclick="showPhotoModal('${f.nama_file}','${(f.deskripsi || '').replace(/'/g,'&#39;')}')" 
+                            title="${f.deskripsi || f.nama_file}">`);
                     });
+                }
+            });
+        });
+    }
+
+    function showPhotoModal(src, desc) {
+        $('#modalImg').attr('src', 'uploads/' + src);
+        $('#modalDesc').text(desc);
+        $('#photoModal').addClass('active');
+    }
+    function closePhotoModal() {
+        $('#photoModal').removeClass('active');
+    }
+    $('#photoModal').on('click', function(e) {
+        if ($(e.target).is('#photoModal')) closePhotoModal();
+    });
+
+    // ===== EXPORT PDF =====
+    async function exportPDF() {
+        const btn = $('#btnExport');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Menyiapkan PDF...');
+        try {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+            let y = 15;
+
+            // --- Header ---
+            pdf.setFillColor(10, 22, 40);
+            pdf.rect(0, 0, pageW, 30, 'F');
+            pdf.setTextColor(64, 190, 164);
+            pdf.setFontSize(18);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('⚓ FISHING LOG — LAPORAN ANALISIS', pageW / 2, 13, { align: 'center' });
+            pdf.setTextColor(180, 200, 220);
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(`Digenerate: ${new Date().toLocaleString('id-ID')}`, pageW / 2, 21, { align: 'center' });
+            y = 38;
+
+            if (!currentData) throw new Error('Data belum dimuat');
+            const { stats, trips, catches, spots } = currentData;
+
+            // --- Stats ---
+            pdf.setTextColor(30, 30, 30);
+            pdf.setFontSize(13);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Ringkasan Statistik', 14, y); y += 6;
+            const statData = [
+                ['Total Perjalanan', stats.total_trips],
+                ['Total Tangkapan', stats.total_catches + ' ekor'],
+                ['Jarak Tempuh', parseFloat(stats.total_distance).toFixed(1) + ' km'],
+                ['Spot Dikunjungi', stats.total_spots]
+            ];
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            statData.forEach((row, i) => {
+                const x = 14 + (i % 2) * 95;
+                if (i % 2 === 0 && i > 0) y += 8;
+                pdf.setFillColor(i % 2 === 0 ? 245 : 240, 248, 255);
+                pdf.roundedRect(x, y, 88, 10, 2, 2, 'F');
+                pdf.setTextColor(100);
+                pdf.text(row[0] + ':', x + 3, y + 7);
+                pdf.setTextColor(30);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(String(row[1]), x + 85, y + 7, { align: 'right' });
+                pdf.setFont('helvetica', 'normal');
+            });
+            y += 20;
+
+            // --- Trips Table ---
+            pdf.setTextColor(30, 30, 30);
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Ringkasan Perjalanan', 14, y); y += 5;
+            const tripHeaders = ['#', 'Waktu Mulai', 'Waktu Selesai', 'Jarak', 'Tangkapan'];
+            const tripColW = [10, 45, 45, 25, 25];
+            pdf.setFillColor(10, 55, 90);
+            pdf.rect(14, y, pageW - 28, 8, 'F');
+            pdf.setTextColor(255);
+            pdf.setFontSize(9);
+            let xOff = 14;
+            tripHeaders.forEach((h, i) => {
+                pdf.text(h, xOff + 2, y + 5.5);
+                xOff += tripColW[i];
+            });
+            y += 8;
+            pdf.setTextColor(30);
+            pdf.setFont('helvetica', 'normal');
+            trips.forEach((t, ri) => {
+                if (y > pageH - 20) { pdf.addPage(); y = 15; }
+                if (ri % 2 === 0) {
+                    pdf.setFillColor(248, 250, 255);
+                    pdf.rect(14, y, pageW - 28, 7, 'F');
+                }
+                xOff = 14;
+                const row = [`#${t.id_perjalanan}`, formatDateSimple(t.waktu_mulai), t.waktu_selesai ? formatDateSimple(t.waktu_selesai) : '-', parseFloat(t.jarak_lokasi).toFixed(1)+' km', t.total_catches+' ekor'];
+                row.forEach((cell, i) => {
+                    pdf.setFontSize(8.5);
+                    pdf.text(String(cell), xOff + 2, y + 5);
+                    xOff += tripColW[i];
                 });
+                y += 7;
             });
-        }
+            y += 6;
 
-        function renderSpots(spots) {
-            const tbody = $('#spotsDetailTable tbody').empty();
-            spots.forEach(s => {
-                tbody.append(`
-                    <tr>
-                        <td><strong>${s.alamat}</strong></td>
-                        <td>${s.jenis_spot}</td>
-                    </tr>
-                `);
-            });
-        }
-
-        function renderFishStats(catches) {
-            const stats = {};
-            let total = 0;
+            // --- Fish Distribution ---
+            if (y > pageH - 60) { pdf.addPage(); y = 15; }
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.setTextColor(30);
+            pdf.text('Distribusi Tangkapan per Jenis Ikan', 14, y); y += 6;
+            const fishStats = {};
+            let fishTotal = 0;
             catches.forEach(c => {
-                stats[c.jenis_ikan] = (stats[c.jenis_ikan] || 0) + c.jumlah_ikan;
-                total += c.jumlah_ikan;
+                fishStats[c.jenis_ikan] = (fishStats[c.jenis_ikan] || 0) + parseInt(c.jumlah_ikan);
+                fishTotal += parseInt(c.jumlah_ikan);
+            });
+            const fishColors = [[64,190,164],[52,152,219],[231,76,60],[241,196,15],[155,89,182]];
+            Object.entries(fishStats).sort((a,b)=>b[1]-a[1]).forEach(([jenis, count], i) => {
+                if (y > pageH - 15) { pdf.addPage(); y = 15; }
+                const pct = fishTotal > 0 ? (count/fishTotal*100).toFixed(1) : 0;
+                const barW = (pageW - 80) * (count / fishTotal);
+                const col = fishColors[i % fishColors.length];
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(9);
+                pdf.setTextColor(30);
+                pdf.text(`${jenis} — ${count} ekor (${pct}%)`, 14, y + 4);
+                pdf.setFillColor(220, 230, 240);
+                pdf.roundedRect(80, y, pageW - 94, 5, 2, 2, 'F');
+                pdf.setFillColor(col[0], col[1], col[2]);
+                pdf.roundedRect(80, y, barW, 5, 2, 2, 'F');
+                y += 9;
+            });
+            y += 5;
+
+            // --- Spots ---
+            if (y > pageH - 40) { pdf.addPage(); y = 15; }
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.setTextColor(30);
+            pdf.text('Spot Memancing', 14, y); y += 5;
+            spots.forEach((s, i) => {
+                if (y > pageH - 15) { pdf.addPage(); y = 15; }
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(9);
+                pdf.setTextColor(80);
+                pdf.text(`${i+1}. ${s.alamat} (${s.jenis_spot})`, 16, y + 4);
+                y += 8;
             });
 
-            const container = $('#statsDetailContainer').empty();
-            Object.entries(stats).forEach(([jenis, count]) => {
-                const percent = ((count / total) * 100).toFixed(0);
-                container.append(`
-                    <div style="margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                            <span>${jenis}</span>
-                            <span>${count} Ekor (${percent}%)</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: ${percent}%"></div>
-                        </div>
-                    </div>
-                `);
-            });
-        }
+            // --- Footer ---
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let p = 1; p <= totalPages; p++) {
+                pdf.setPage(p);
+                pdf.setFillColor(10, 22, 40);
+                pdf.rect(0, pageH - 10, pageW, 10, 'F');
+                pdf.setTextColor(100, 140, 160);
+                pdf.setFontSize(8);
+                pdf.text(`Wongsibuk Fishing Log — Halaman ${p} dari ${totalPages}`, pageW/2, pageH - 3.5, { align: 'center' });
+            }
 
-        function showPhotoModal(src, desc) {
-            $('#modalImg').attr('src', 'uploads/' + src);
-            $('#modalDesc').text(desc);
-            $('#photoViewModal').css('display', 'flex');
+            const dateStr = new Date().toISOString().slice(0,10);
+            pdf.save(`fishing-log-laporan-${dateStr}.pdf`);
+        } catch(err) {
+            alert('Gagal export PDF: ' + err.message);
+        } finally {
+            btn.prop('disabled', false).html('<i class="fas fa-file-pdf"></i> Export PDF');
         }
+    }
 
-        function closePhotoModal() {
-            $('#photoViewModal').hide();
-        }    </script>
+    // ===== HELPERS =====
+    function formatDate(dt) {
+        if (!dt) return '—';
+        return new Date(dt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    function formatDateSimple(dt) {
+        if (!dt) return '-';
+        return new Date(dt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    function getSpotColor(jenis) {
+        const m = { 'Sungai':'#2ecc71','Danau':'#3498db','Laut':'#00bcd4','Waduk':'#e67e22','Kolam':'#f1c40f','Rawa':'#95a5a6','Lainnya':'#e74c3c' };
+        return m[jenis] || '#40bea4';
+    }
+    </script>
 </body>
-</html>
+</html>

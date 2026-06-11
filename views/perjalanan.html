@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perjalanan - Fishing Log</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=1.2">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .table-custom {
@@ -110,7 +110,7 @@
 
     <!-- Modal -->
     <div id="tripModal" class="glass" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
-        <div class="glass" style="background: white; width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem;">
+        <div class="glass" style="background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem;">
             <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Tambah Perjalanan</h2>
             <form id="tripForm">
                 <input type="hidden" id="id_perjalanan">
@@ -268,7 +268,7 @@
 
         function showAlert(msg, type) {
             const color = type === 'success' ? 'var(--success)' : 'var(--danger)';
-            const alert = $(`<div class="animate-fade" style="padding: 1rem; background: white; border-left: 4px solid ${color}; border-radius: var(--radius-md); box-shadow: var(--shadow-md); margin-bottom: 2rem;">${msg}</div>`);
+            const alert = $(`<div class="animate-fade" style="padding: 1rem; background: var(--surface); color: var(--text-main); border-left: 4px solid ${color}; border-radius: var(--radius-md); box-shadow: var(--shadow-md); margin-bottom: 2rem;">${msg}</div>`);
             $('#alertPlaceholder').html(alert);
             setTimeout(() => alert.fadeOut(), 3000);
         }
