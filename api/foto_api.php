@@ -4,9 +4,9 @@
  * Fishing Log Application - OOP Version
  */
 
-session_start();
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/Database.php';
+startSecureSession();
 
 header('Content-Type: application/json; charset=utf-8');
 setCorsHeaders();
@@ -28,6 +28,7 @@ try {
     $user_id = $_SESSION['id_pengguna'];
     $method = $_SERVER['REQUEST_METHOD'];
     $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    if ($method !== 'GET') { requireCsrfToken(); }
 
     if ($method === 'GET') {
         if (isset($_GET['id_tangkapan'])) {
@@ -88,7 +89,7 @@ try {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method tidak diizinkan']);
 
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+} catch (Throwable $e) {
+    error_log($e->getMessage());
+    apiErrorResponse();
 }

@@ -654,6 +654,12 @@
         '#e91e63','#00bcd4','#ff5722','#607d8b'
     ];
 
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>'\"]/g, function (character) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character];
+        });
+    }
+
     let donutChartInst = null;
     let barChartInst = null;
     let currentData = null;
@@ -890,7 +896,7 @@
             container.append(`
                 <div class="fish-stat-item">
                     <div class="fish-stat-label">
-                        <span><i class="fas fa-circle" style="color:${CHART_COLORS[i % CHART_COLORS.length]}; font-size:0.6rem; margin-right:0.4rem;"></i>${jenis}</span>
+                        <span><i class="fas fa-circle" style="color:${CHART_COLORS[i % CHART_COLORS.length]}; font-size:0.6rem; margin-right:0.4rem;"></i>${escapeHtml(jenis)}</span>
                         <span>${count} ekor (${pct}%)</span>
                     </div>
                     <div class="progress-track">
@@ -920,8 +926,8 @@
                 <div style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 0; border-bottom:1px solid var(--border);">
                     <span class="rank-badge ${rankClass}">${i+1}</span>
                     <div style="flex:1; min-width:0;">
-                        <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.alamat}</div>
-                        <span style="font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:20px; background:${typeColor}22; color:${typeColor}; font-weight:600;">${s.jenis_spot}</span>
+                        <div style="font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(s.alamat)}</div>
+                        <span style="font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:20px; background:${typeColor}22; color:${typeColor}; font-weight:600;">${escapeHtml(s.jenis_spot)}</span>
                     </div>
                 </div>
             `;
@@ -936,7 +942,7 @@
             return;
         }
         trips.forEach((t, i) => {
-            const fishBadges = (t.fish_types || []).slice(0,3).map(f => `<span class="fish-badge"><i class="fas fa-fish"></i>${f}</span>`).join('');
+            const fishBadges = (t.fish_types || []).slice(0,3).map(f => `<span class="fish-badge"><i class="fas fa-fish"></i>${escapeHtml(f)}</span>`).join('');
             const more = t.fish_types && t.fish_types.length > 3 ? `<span class="fish-badge">+${t.fish_types.length - 3}</span>` : '';
             tbody.append(`
                 <tr>

@@ -4,7 +4,8 @@
  * Fishing Log Application
  */
 
-session_start();
+require_once __DIR__ . '/../config/config.php';
+startSecureSession();
 
 // Check if user is logged in
 if (!isset($_SESSION['id_pengguna'])) {
@@ -123,6 +124,7 @@ $user_email = $_SESSION['email'];
     </main>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../assets/js/security.js"></script>
     <script>
         $(document).ready(function() {
             // Dark Mode Logic

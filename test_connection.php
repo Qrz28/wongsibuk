@@ -1,4 +1,8 @@
 <?php
+if (getenv('APP_ENV') !== 'development') {
+    http_response_code(404);
+    exit;
+}
 /**
  * Test Database Connection
  */

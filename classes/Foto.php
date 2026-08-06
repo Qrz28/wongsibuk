@@ -82,19 +82,28 @@ class Foto {
             return ['success' => false, 'message' => 'Tangkapan tidak valid'];
         }
 
-        // Validate file
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!in_array($file['type'], $allowed_types)) {
+        // Do not trust the browser-provided MIME type or filename extension.
+        if (!isset($file['tmp_name'], $file['size']) || !is_uploaded_file($file['tmp_name'])) {
+            return ['success' => false, 'message' => 'Upload file tidak valid'];
+        }
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+        ];
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($file['tmp_name']);
+        if (!isset($allowedTypes[$mimeType])) {
             return ['success' => false, 'message' => 'Tipe file tidak diizinkan'];
         }
 
-        if ($file['size'] > 5 * 1024 * 1024) {
+        if ($file['size'] < 1 || $file['size'] > 5 * 1024 * 1024) {
             return ['success' => false, 'message' => 'Ukuran file maksimal 5MB'];
         }
 
-        // Generate unique filename
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = uniqid('fish_') . '.' . $ext;
+        // Generate server-controlled filename: a valid image can never become executable by extension.
+        $filename = 'fish_' . bin2hex(random_bytes(16)) . '.' . $allowedTypes[$mimeType];
         $target_path = $this->uploadDir . $filename;
 
         if (move_uploaded_file($file['tmp_name'], $target_path)) {
@@ -107,9 +116,9 @@ class Foto {
                 $stmt->close();
                 return ['success' => true, 'id' => $id, 'filename' => $filename];
             } else {
-                $error = $stmt->error;
                 $stmt->close();
-                return ['success' => false, 'message' => $error];
+                if (is_file($target_path)) { unlink($target_path); }
+                return ['success' => false, 'message' => 'Gagal menyimpan data foto'];
             }
         } else {
             return ['success' => false, 'message' => 'Gagal mengupload file'];

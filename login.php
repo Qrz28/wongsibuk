@@ -4,20 +4,9 @@
  * Fishing Log Application
  */
 
-// Start session FIRST before any headers
-session_start();
-
-// Include config to get CORS function
-if (!file_exists('config.php')) {
-    http_response_code(500);
-    die(json_encode([
-        'success' => false,
-        'message' => 'File config.php tidak ditemukan',
-        'debug' => 'Current dir: ' . __DIR__
-    ]));
-}
-
-require_once 'config.php';
+require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/config/Database.php';
+startSecureSession();
 
 header('Content-Type: application/json; charset=utf-8');
 setCorsHeaders();
@@ -38,13 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Check if database is connected
-if (!$conn || $conn->connect_error) {
+try {
+    $db = new Database();
+    $conn = $db->getConnection();
+} catch (Throwable $e) {
+    error_log($e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Database connection error: ' . ($conn->connect_error ?? 'Unknown'),
-        'debug' => true
+        'message' => 'Terjadi kesalahan pada server'
     ]);
     exit();
 }
@@ -104,11 +95,7 @@ if (!$stmt) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Database error: ' . $conn->error,
-        'debug' => [
-            'error' => $conn->error,
-            'errno' => $conn->errno
-        ]
+        'message' => 'Terjadi kesalahan pada server'
     ]);
     exit();
 }
@@ -138,18 +125,21 @@ if (!password_verify($password, $user['password'])) {
     exit();
 }
 
-// Set session variables
+// Defend against session fixation when authentication succeeds.
+session_regenerate_id(true);
 $_SESSION['id_pengguna'] = $user['id_pengguna'];
 $_SESSION['nama'] = $user['nama'];
 $_SESSION['email'] = $user['email'];
 $_SESSION['login_time'] = date('Y-m-d H:i:s');
+issueCsrfCookie();
 
 // If remember me is checked, set cookie for 30 days
 if ($remember) {
     $cookie_name = 'fishing_log_user';
     $cookie_value = base64_encode($user['id_pengguna'] . ':' . $user['email']);
     $cookie_expire = time() + (30 * 24 * 60 * 60); // 30 days
-    setcookie($cookie_name, $cookie_value, $cookie_expire, '/', '', false, true);
+    // Legacy UI compatibility only; authentication always relies on the server-side session.
+    setcookie($cookie_name, $cookie_value, ['expires' => $cookie_expire, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax']);
 }
 
 // Success response

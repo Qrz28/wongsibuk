@@ -4,7 +4,8 @@
  * Redirects to login page
  */
 
-session_start();
+require_once __DIR__ . '/config/config.php';
+startSecureSession();
 
 // Check if user is already logged in
 if (isset($_SESSION['id_pengguna'])) {

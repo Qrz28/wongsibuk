@@ -211,8 +211,7 @@ tr.append(actions);
 
 1. Buka browser dan akses: `http://localhost/wongsibuk/login.html`
 2. Login dengan:
-   - Email: `admin@example.com`
-   - Password: `password`
+   - Register a test account through the application.
 3. Test setiap fitur:
    - Tambah perjalanan
    - Tambah catatan
@@ -223,7 +222,7 @@ tr.append(actions);
 ## Notes
 
 - Database: `fishinglog`
-- User default untuk testing: `admin@example.com` / `password`
+- Tidak ada akun bawaan; buat akun pengujian melalui aplikasi.
 - All password hashes menggunakan bcrypt
 - Timezone: `Asia/Jakarta`
 - Character set: `UTF-8`
