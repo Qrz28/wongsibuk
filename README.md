@@ -43,19 +43,17 @@ wongsibuk/
 ### 1. Database Configuration
 
 1.  Run the `database_setup.sql` script in your MySQL environment (phpMyAdmin or CLI).
-2.  Update your connection details in `config.php`:
+2.  Set the values shown in `.env.example` as web-server environment variables (or in your hosting control panel). Do not commit a file containing real credentials:
 
-```php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', 'your_password');
-define('DB_NAME', 'fishinglog');
+```dotenv
+DB_HOST=localhost
+DB_USER=app_user
+DB_PASS=use_a_strong_password
+DB_NAME=wongsibuk
 ```
 
-### 2. Default Credentials
-For testing purposes, you can use:
-*   **Email**: `admin@example.com`
-*   **Password**: `password`
+### 2. Initial Account
+Register an account through the application after importing the schema. The application intentionally has no default credentials.
 
 ### 3. Local Deployment
 1.  Place the project folder in your server's root directory (`htdocs` for XAMPP, `www` for Laragon/Wamp).

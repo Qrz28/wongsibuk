@@ -60,6 +60,4 @@ CREATE TABLE IF NOT EXISTS foto (
     FOREIGN KEY (id_tangkapan) REFERENCES tangkapan(id_tangkapan) ON DELETE CASCADE
 );
 
--- Insert sample user (password: 'password' hashed)
-INSERT INTO pengguna (nama, email, password) VALUES
-('Admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+-- No default accounts are created. Register the initial user through the application.

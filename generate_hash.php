@@ -1,4 +1,8 @@
 <?php
+if (getenv('APP_ENV') !== 'development') {
+    http_response_code(404);
+    exit;
+}
 /**
  * Password Hash Generator
  * Gunakan tool ini untuk generate password hash bcrypt
@@ -116,8 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['password'])) {
                 <div class="mt-4 text-center text-white">
                     <small>
                         Untuk testing, gunakan:<br>
-                        Email: <code>admin@example.com</code><br>
-                        Password: <code>password</code>
+                        Use a unique test password; this tool is available only in development.
                     </small>
                 </div>
             </div>

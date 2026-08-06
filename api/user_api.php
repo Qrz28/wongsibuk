@@ -4,9 +4,9 @@
  * Fishing Log Application - OOP Version
  */
 
-session_start();
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/Database.php';
+startSecureSession();
 
 header('Content-Type: application/json; charset=utf-8');
 setCorsHeaders();
@@ -57,6 +57,12 @@ try {
                 exit();
             }
 
+            if (strlen($nama) > 100 || strlen($email) > 254 || strlen($password) > 255) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Input terlalu panjang']);
+                exit();
+            }
+
             if ($password !== $confirm_password) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'message' => 'Konfirmasi kata sandi tidak cocok']);
@@ -66,10 +72,12 @@ try {
             $result = $user->register($nama, $email, $password);
 
             if ($result['success']) {
+                session_regenerate_id(true);
                 $_SESSION['id_pengguna'] = $result['id_pengguna'];
                 $_SESSION['nama'] = $result['nama'];
                 $_SESSION['email'] = $result['email'];
                 $_SESSION['login_time'] = date('Y-m-d H:i:s');
+                issueCsrfCookie();
 
                 http_response_code(201);
                 echo json_encode([
@@ -92,13 +100,21 @@ try {
                 exit();
             }
 
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254 || strlen($password) > 255) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Input tidak valid']);
+                exit();
+            }
+
             $result = $user->login($email, $password);
 
             if ($result['success']) {
+                session_regenerate_id(true);
                 $_SESSION['id_pengguna'] = $result['id_pengguna'];
                 $_SESSION['nama'] = $result['nama'];
                 $_SESSION['email'] = $result['email'];
                 $_SESSION['login_time'] = date('Y-m-d H:i:s');
+                issueCsrfCookie();
 
                 echo json_encode([
                     'success' => true,
@@ -120,7 +136,7 @@ try {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method tidak diizinkan']);
 
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+} catch (Throwable $e) {
+    error_log($e->getMessage());
+    apiErrorResponse();
 }
